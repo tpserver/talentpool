@@ -1,0 +1,27 @@
+#policy_container_container {
+	padding-top: 80px;
+	padding-bottom: 20px;
+}
+
+#policy_container {
+	width: 900px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	padding: 25px;
+	background-color: #fff;
+	border: 1px solid #d2d2d2;
+}
+
+h3 {
+	width: 100%;
+}
+
+li {
+	line-height: 25px;
+}
+
+h1 {
+	text-align: center;
+	margin-bottom: 20px;
+}

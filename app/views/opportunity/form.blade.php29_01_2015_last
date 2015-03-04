@@ -1,0 +1,184 @@
+ {{ Form::open(['url' => route('opportunity.store'), 'id' => 'new_opportunity_form'])}}
+    <div id="opportunity_choice_box" class="opportunity_basic_info">
+    <div class="box_header">Opportunity Type</div>
+    <div id="opportunity_1" class="opportunity_tab left">Specific Role</div>
+    <div id="opportunity_2" class="opportunity_tab center">Upcoming Event</div>
+    <div id="opportunity_3" class="opportunity_tab right">General Introduction</div>
+    <div id="spacer"></div>
+    </div>
+    
+    <div id="opportunity_option_1">
+    
+    <div id="blue_box_small_container">
+    
+    <div class="opportunity_basic_info blue_box_small_left" id="blue_box_small">
+        <div class="text_input_container">
+            {{$errors->first('name', '<div class="error_overlay opportunity-name-error" id="first_name_error">:message</div>')}}
+            {{Form::text('name', '', ['id' => 'opportunity_name_input', 'placeholder' => 'Opportunity Name'])}}
+        </div>
+        <div id="work_type" class="text_input_container" style="margin-right: 0">
+            {{$errors->first('work-type', '<div class="error_overlay opportunity-work-error">:message</div>')}}
+            @include('inputs.work_type_dropdown')
+        </div>
+        <div id="salary" class="text_input_container">
+            {{Form::text('salary', '', ['id' => 'salary_input', 'placeholder' => 'Annual Salary'])}}
+        </div>
+        
+        <div id="spacer"></div>
+    </div>
+    
+    <div id="blue_box_small">
+    <div class="box_header">Start Date</div>
+    <select name="date_dob" id="date_dob_opportunity">
+    <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+        </select>
+        
+            
+        <select name="month_dob" id="month_dob_opportunity">
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+        </select>
+        
+        <select name="year_dob" id="year_dob_opportunity">
+        <option value="2014">2014</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>	
+        </select>
+        
+        <div id="spacer"></div>
+        
+    </div>
+    
+    </div>
+    
+    <div id="blue_box_opportunity">
+        <div class="box_header">Location</div>
+        @foreach($locations as $location)
+        <label class="location_checkbox">{{Form::checkbox('opportunity_location[]', $location->id)}}{{$location->name}}</label>
+        @endforeach
+        
+        <div id="spacer"></div>
+    </div>
+    <div id="form_div_header">Sector</div>
+    <div id="sector_box">
+        @include('signup.inputs.work')
+    </div>
+    <div class='clear'></div>
+    <div id="button_holder">
+                        
+                    
+    @if(Input::has('returnTo'))
+        {{Form::hidden('returnTo', Input::get('returnTo'))}}
+    @endif
+    {{ Form::submit('Save', ['class' => 'red_button', 'id' => 'next_button_other']) }}
+    </div>
+    
+    </div>
+    
+     <div id="opportunity_option_2">
+     
+     <div id="blue_box_opportunity">
+     
+     <div class="text_input_container">
+     {{Form::text('name', '', ['id' => 'opportunity_event_name_input', 'placeholder' => 'Event Name'])}}
+     </div>
+     
+     <div id="spacer_blue_box"></div>
+     
+     </div>
+     
+     <div id="blue_box_opportunity">
+     
+     <div class="box_header">Event Date</div>
+     
+     <select name="date_dob" id="date_dob_opportunity">
+     <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+         </select>
+         
+             
+         <select name="month_dob" id="month_dob_opportunity">
+         <option value="1">January</option>
+         <option value="2">February</option>
+         <option value="3">March</option>
+         <option value="4">April</option>
+         <option value="5">May</option>
+         <option value="6">June</option>
+         <option value="7">July</option>
+         <option value="8">August</option>
+         <option value="9">September</option>
+         <option value="10">October</option>
+         <option value="11">November</option>
+         <option value="12">December</option>
+         </select>
+         
+         <select name="year_dob" id="year_dob_opportunity">
+         <option value="2014">2014</option>
+         <option value="2015">2015</option>
+         <option value="2016">2016</option>	
+         </select>
+     
+     <div id="spacer_blue_box"></div>
+     
+     </div>
+     
+     <div id="blue_box_opportunity">
+     
+     <div class="text_input_container">
+     {{Form::text('name', '', ['id' => 'opportunity_event_location_input', 'placeholder' => 'Event Location'])}}
+     </div>
+     
+     <div id="opportunity_event_location_map"></div>
+     
+     <div id="spacer_blue_box"></div>
+     
+     </div>
+     
+     <div id="button_holder">        
+     @if(Input::has('returnTo'))
+         {{Form::hidden('returnTo', Input::get('returnTo'))}}
+     @endif
+     {{ Form::submit('Save', ['class' => 'red_button', 'id' => 'next_button_other']) }}
+     </div>
+     
+     </div>
+     
+     <div id="opportunity_option_3">
+     
+     <div id="blue_box_opportunity">
+     
+     <div class="text_input_container">
+     {{Form::text('name', '', ['id' => 'opportunity_event_name_input', 'placeholder' => 'Company Name'])}}
+     </div>
+     
+     <div id="spacer_blue_box"></div>
+     
+     </div>
+     
+     <div id="sector_box">
+         @include('signup.inputs.work')
+     </div>
+     <div class='clear'></div>
+     
+     
+     <div id="button_holder">        
+     @if(Input::has('returnTo'))
+         {{Form::hidden('returnTo', Input::get('returnTo'))}}
+     @endif
+     {{ Form::submit('Save', ['class' => 'red_button', 'id' => 'next_button_other']) }}
+     </div>
+     
+     </div>
+    
+    
+    
+{{ Form::close() }}

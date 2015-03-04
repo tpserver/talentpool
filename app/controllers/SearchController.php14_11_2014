@@ -1,0 +1,249 @@
+<?php
+
+class SearchController extends \BaseController {
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index()
+    {       
+//        $data = [ 'workTypes'   => WorkType::has('user')->get(),
+//            'sports'            => Sport::has('user')->get(),
+//            'sportLeves'        => SportLevel::has('user')->get(),
+//            'sportPositions'    => SportPosition::has('user')->get(),
+//            'workOptions'       => Option::has('user')->where('category_id', '=', 1)->get(),
+//            'ethnicities'       => Ethnicity::all(),
+//            'academicOptions'   => Option::has('user')->where('category_id', '=', 2)->get(),
+//            'skillOptions'      => Option::where('subcategory_id', '=', 9)->get(),
+//            'languages'         => Language::orderBy('name', 'ASC')->get(),
+//            'languageLevels'    => LanguageLevel::all(),
+//            'socialPositions'   => SocialPosition::has('user')->get(),
+//            'socialCategories'  => SocialCategory::has('user')->get(),
+//            'degreeTypes'       => DegreeType::has('user')->get(),
+//            'degreeResults'     => DegreeResult::has('user')->get(),
+//            'degreeSubjects'    => DegreeSubject::has('user')->get(),
+//            'universities'      => University::has('user')->get(),
+//            'socialCategories'  => SocialCategory::has('user')->get(),
+//            'socialPositions'   => SocialPosition::has('user')->get(),
+//            'workDurations'     => WorkDuration::has('user')->get(),
+//            'usersCount'        => User::where('activated', '=', 1)->count(),
+//            'campaign'          => Input::get('campaign', 0),
+//        ];
+        
+        $data = [ 'workTypes'   => WorkType::where('approved', '=', 1)->get(),
+            'workOptions'       => Option::where('category_id', '=', 1)->get(),
+            'workDurations'     => WorkDuration::all(),
+            'sports'            => Sport::all(),
+            'sportNames'        => SportName::where('approved', '=', 1)->get(),
+            'sportLevels'       => SportLevel::where('approved', '=', 1)->get(),
+            'sportPositions'    => SportPosition::all(),
+            'ethnicities'       => Ethnicity::all(),
+            'academicOptions'   => Option::where('category_id', '=', 2)->get(),
+            'skillOptions'      => Skill::with('SkillGroup')->get(),
+            'languages'         => LanguageName::orderBy('name', 'ASC')->get(),
+            'languageLevels'    => LanguageLevel::all(),
+            'degreeTypes'       => DegreeType::where('approved', '=', 1)->get(),
+            'degreeResults'     => DegreeResult::where('approved', '=', 1)->get(),
+            'degreeSubjects'    => DegreeSubject::where('approved', '=', 1)->get(),
+            'universities'      => University::all(),
+            'socialCategories'  => SocialCategory::where('approved', '=', 1)->get(),
+            'socialPositions'   => SocialPosition::where('approved', '=', 1)->get(),
+            'capabilities'      => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+            'attributes'        => Option::where('group_id', '=', 10)->with('group')->get(),
+            'experience'        => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+            'usersCount'        => User::where('activated', '=', 1)->where('group_id', '=', 1)->count(),
+            'campaign'          => Input::get('campaign', 0),
+        ];
+
+//        return View::make('db_search', $data );
+        return View::make('db_search_new_dynamic', $data );
+    }
+    
+    public function getCount()
+    {
+        $u = User::where('activated', '=', 1)->where('group_id', '=', 1);
+        $i = 0;
+        
+        $languages      = Input::get('language', []) ;
+        $languageLevels = Input::get('language-level', []);
+        $workOptions    = Input::get('work_option', []);
+        $capabilities   = Input::get('capabilities', []);
+        $experience     = Input::get('experience', []);
+        $workTypes      = Input::get('work_type_option', []);
+        $socialCategory = Input::get('society_category', []);
+        $socialPosition = Input::get('society_position', []);
+        $attributes     = Input::get('attributes', []);
+        $sportLevels    = Input::get('sport_level', []);
+        $sportNames     = Input::get('sport_name', []);
+        $skills         = Input::get('skills', []);
+        $degreeTypeC    = Input::get('degree_type', []);
+        $degree_resultC = Input::get('degree_result', []);
+        $schoolSubject  = Input::get('school-subject', []);
+        $minWorkDuration = Input::get('min-work-length', [0]);
+        $maxWorkDuration = Input::get('max-work-length', [0]);
+        $minWorkDuration = (int)$minWorkDuration[0];
+        $maxWorkDuration = (int)$maxWorkDuration[0];
+        
+      
+        if( $minWorkDuration > 0 && $maxWorkDuration > 0 )
+        {
+            $u = $u->whereHas('work', function($q) use($minWorkDuration, $maxWorkDuration){
+                $q->whereBetween('work_duration_id', array($minWorkDuration, $maxWorkDuration) );
+            });
+        }elseif($minWorkDuration > 0 )
+        {
+            $u = $u->whereHas('work', function($q) use($minWorkDuration){
+                $q->where('work_duration_id', '=', $minWorkDuration );
+            });
+        }elseif($maxWorkDuration > 0)
+        {
+            $u = $u->whereHas('work', function($q) use($maxWorkDuration){
+                $q->where('work_duration_id', '=', $maxWorkDuration );
+            });
+        }
+
+        $options = array_merge($workOptions, $experience, $capabilities);
+        foreach ($options as $param)
+        {
+            $u = $u->whereHas('option', function($q) use($param){
+                $q->where('option_id', '=', $param );
+            });
+        }
+        
+        foreach ($schoolSubject as $param)
+        {
+            $u = $u->whereHas('schoolQualification', function($q) use($param){
+                $q->whereHas('type', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($skills as $param)
+        {
+            $u = $u->whereHas('skill', function($q) use($param){
+                $q->where('skill_id', '=', $param );
+            });
+        }
+        
+        foreach ($workTypes as $param)
+        {
+            $u = $u->whereHas('work', function($q) use($param){
+                $q->whereHas('type', function($q) use($param){
+                    $q->where('id', '=', $param);
+                } );
+            });
+        }
+        
+        foreach ($socialCategory as $param)
+        {
+            $u = $u->whereHas('social', function($q) use($param){
+                $q->whereHas('category', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($degree_resultC as $param)
+        {
+            $u = $u->whereHas('degree', function($q) use($param){
+                $q->whereHas('result', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($degreeTypeC as $param)
+        {
+            $u = $u->whereHas('degree', function($q) use($param){
+                $q->whereHas('type', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($socialPosition as $param)
+        {
+            $u = $u->whereHas('social', function($q) use($param){
+                $q->whereHas('position', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($sportLevels as $param)
+        {
+            $u = $u->whereHas('sport', function($q) use($param){
+                $q->where('sport_level_id', '=', $param );
+            });
+        }
+        foreach ($sportNames as $param)
+        {
+            $u = $u->whereHas('sport', function($q) use($param){
+                $q->where('sport_name_id', '=', $param );
+            });
+        }
+
+        
+        foreach($languages as $language)
+        {
+            $u = $u->whereHas('language', function($q) use($language, $languageLevels, $i){
+                    $q = $q->whereHas('name', function($q)  use($language, $languageLevels, $i){
+                        $q->where('name_id', '=', $language);
+                        if( isset( $languageLevels[$i] ) )
+                        {
+                            $q = $q->where('level_id', '=', $languageLevels[$i]);
+                        }
+                    });
+            });
+            $i++;
+        }
+        $sqldata = $u->toSql();
+        $userList = $u->select('id')->get();
+        $users = array();
+        foreach ($userList as $ul)
+            $users[] = $ul->id;
+        Session::put('candidates_pool_users', $users);
+        $userList = implode( ',' , $users); 
+        return ['userCount' => $u->count(), 'users' => $userList, 'sqldata' => $sqldata];
+    }
+
+    public function getCompanies()
+    {
+        return University::all();
+    }
+
+    public function getUniversities()
+    {
+        return $this->_getNamesForTextSearch('University');
+    }
+
+    function getDegreeSubjects()
+    {
+        return $this->_getNamesForTextSearch('DegreeSubject');
+    }
+
+    public function getUniversityDegrees()
+    {
+        return $this->_getNamesForTextSearch('DegreeType');
+    }
+
+    public function getSports()
+    {
+        return $this->_getNamesForTextSearch('SportName');
+    }
+
+
+    public function getSocials()
+    {
+        return $this->_getNamesForTextSearch('Social');
+    }
+
+    private function _getNamesForTextSearch($modelName)
+    {
+        $name = Input::get('q', '');
+        return $modelName::where('name', 'LIKE', "$name%")->select(['id', 'name'])->get();
+    }
+}

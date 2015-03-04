@@ -1,0 +1,8 @@
+<?php $_lastGroupId = 0;  $_isOpened = false; ?>
+@foreach( $skillOptions as $option )
+@if( $option->skill_group->id != $_lastGroupId || $_lastGroupId == 0 )
+<div class="sub_option_divider">{{ $option->skill_group->name}}</div>
+@endif    
+    <label class="subject_category">{{ Form::checkbox('skills[]', $option->id, false, ['id' => 'skills-'.$option->id, 'data-group-name' => 'skills']) }}{{ $option->name }}</label>
+<?php $_lastGroupId = $option->skill_group->id;  ?>
+@endforeach

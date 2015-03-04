@@ -1,0 +1,18 @@
+<?php $_lastGroupId = 0;  $_isOpened = false; ?>
+@foreach( $skillOptions as $option )
+@if( $option->skill_group->id != $_lastGroupId || $_lastGroupId == 0 )
+<div class="sub_option_divider">{{ $option->skill_group->name}}</div>
+@endif
+    <div class="key_skill">
+        <label class="subject_category" style="width: 149px;">
+            {{ Form::checkbox('skill[]', $option->id, false, ['id' => 'skill-'.$option->id, 'data-group-name' => 'skill', 'data-group-delete' => 'true']) }}{{ $option->name }}
+        </label>
+        <select name="skill-level[]" data-group-name="skill" data-group-delete="false" style="height: 35px;width: 120px;">
+            <option value="0">Level</option>
+            <option value="1">Basic</option>
+            <option value="2">Intermediate</option>
+            <option value="3">Expert</option>
+        </select>
+    </div>
+<?php $_lastGroupId = $option->skill_group->id;  ?>
+@endforeach

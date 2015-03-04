@@ -1,0 +1,140 @@
+<?php
+
+class CandidatesPoolController extends \BaseController {
+
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @return Response
+	 */
+	public function __construct()
+	{
+	    $this->beforeFilter('auth');
+	    if( isset(Sentry::getUser()->id) )
+		$this->_user = User::find(Sentry::getUser()->id);
+	}
+	
+	public function index()
+	{
+	    $candidatesPools = CandidatesPool::with('option')->with('language')->get();
+	    
+	    $data = [
+		'candidatesPools' => $candidatesPools,
+	    ];
+	    return View::Make('candidates-pool.index', $data);
+	}
+
+
+	/**
+	 * Show the form for creating a new resource.
+	 *
+	 * @return Response
+	 */
+	public function create()
+	{
+            Session::flash('returnTo', route('candidatesPool.index'));
+            return Redirect::to('search');
+	}
+
+
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @return Response
+	 */
+	public function store()
+	{
+	    
+	    //$users = Input::get('users');
+	    $users = Session::get('candidates_pool_users');
+	    //$users = implode(",",$users);
+	    $attributes = Input::get('attributes', []);
+	    $capabilities = Input::get('capabilities', []);
+	    $languages = Input::get('language', []);
+	    $language_levels = Input::get('language-level', []);
+	    $workOptions = Input::get('work_option', []);
+	    $workexperiences = Input::get('experience', []);
+	    //print_r(Input::all());die();
+	    $candidatesPool = new CandidatesPool;
+	    $candidatesPool->name = Input::get('name');
+	    $candidatesPool->user_id = $this->_user->id;
+    
+	    $candidatesPool->save();
+	    //$users = explode(',', $users);
+	    foreach ($users as $user)
+		$candidatesPool->users()->attach($user);
+    
+	    $options = array_merge($attributes, $capabilities, $workOptions, $workexperiences);
+	    foreach( $options as $option )
+		$candidatesPool->option()->attach($option);
+	    
+	    //foreach( $languages as $language)
+	    //{
+	    //    $candidatesPool->language()->attach($language);
+	    //}
+	
+	    Session::set('candidates-pool', $candidatesPool->id);
+	    //if( Input::get('returnTo', '') != '' )
+	    //    return Redirect::to( route(Input::get('returnTo')) );
+	    //
+	    //return Redirect::to(route('new-campaign.email'));
+	    return Redirect::to(route('new-campaign.candidates'));
+	}
+
+
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function show($id)
+	{
+            $candidatesPool = CandidatesPool::find($id);
+            $candidatesPoolUserCount = CandidatesPool::with('users')->find($id);
+            $candidatesPool['userCount'] = $candidatesPool->users()->count();
+            if(Request::ajax())
+                return $candidatesPool;
+            return $candidatesPool;
+	}
+
+
+	/**
+	 * Show the form for editing the specified resource.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function edit($id)
+	{
+		//
+	}
+
+
+	/**
+	 * Update the specified resource in storage.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function update($id)
+	{
+		//
+	}
+
+
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function destroy($id)
+	{
+            $candidatesPool = CandidatesPool::find($id);
+            $candidatesPool->delete();
+            return Redirect::to(route('candidatesPool.index'));
+	}
+
+
+}

@@ -1,0 +1,358 @@
+<?php
+
+class SignupController extends \BaseController {
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    private $mailchimp = null; // added by SD 19-01-2015
+    public function __construct()  //  added by SD 19-01-2015
+    {
+        $this->mailchimp = new Mailchimp();
+    }
+    public function index()
+    {
+    
+    $origin_id = Input::get('a');
+    
+    if ($origin_id !== NULL) {
+    	Session::put('origin_id', $origin_id);
+    }
+    
+    
+        $data = [   'origin_id' => $origin_id,
+        			'sports'            => SportName::where('approved', '=', 1)->get(), 
+                    'sportLevels'       => SportLevel::where('approved', '=', 1)->get(), 
+                    'sportPositions'    => SportPosition::where('approved', '=', 1)->get(),
+                    'languages'         => LanguageName::orderBy('name', 'ASC')->where('approved', '=', 1)->get(),
+                    'languageLevels'    => LanguageLevel::all(),
+                    'degreeTypes'       => DegreeType::where('approved', '=', 1)->get(),
+                    'degreeSubjects'    => DegreeSubject::where('approved', '=', 1)->get(),
+                    'degreeResults'     => DegreeResult::where('approved', '=', 1)->get(),
+                    'workTypes'         => WorkType::where('approved', '=', 1)->get(),
+                    'workSectors'       => WorkSector::with('category')->get(),
+                    'skills'            => Skill::with('SkillGroup')->get(),
+                    'locations'         => Location::all(),
+                    'ethnicities'       => Ethnicity::with('group')->get(),
+                    'universities'      => University::with('country')->where('approved', '=', 1)->get(),
+                    'schoolQualificationTypes' => SchoolQualificationType::with('results')->where('approved', '=', 1)->get(),
+                    'socialPositions'   => SocialPosition::where('approved', '=', 1)->get(),
+                    'socialCategories'  => SocialCategory::where('approved', '=', 1)->get(),
+                    'workOptions'       => Option::where('category_id', '=', 1)->with('group')->get(),
+                    'capabilites'       => Option::where('group_id', '=', 12)->with('group')->get(),
+                    'attributes'        => Option::where('group_id', '=', 10)->with('group')->with('group')->get(),
+                    'experience'        => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+                    'schoolOptions'     => Option::where('subcategory_id', '=', 5)->with('group')->get()
+                ];
+
+        return View::make('signup.index', $data );
+    }
+    public function subscribe_new($user_email,$marge_vars)
+    {
+       
+       $id='049fed5a79';//test-talentpool-mj list id
+       
+       $batch=array('email'=>$user_email);
+        $batches[]=array('email'=>$user_email);
+        $exist_check = $this->mailchimp->lists->memberInfo($id, $batches);
+        if($exist_check['success_count']==0)
+        {
+            //print_r($this->mailchimp->lists->subscribe($id,$batch,'','','','',''));
+            try {
+                $this->mailchimp->lists->subscribe($id,$batch,$marge_vars,'','','','');
+            } catch (Exception $e) {
+                //echo 'Caught exception: ',  $e->getMessage(), "\n";
+            }
+        }
+       //$batch[]=array('email'=>array('email' => 'saurav.dikshit@esolzmail.com'));
+      //($id, $email, $merge_vars=null, $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false)
+       
+       
+       // die();
+    }
+    public function empcreate()
+    {
+        return View::make('employer.empcreate');
+    }
+     /**
+     * @uses Input
+     * @return string Positive if the email is already taken, else - Negative
+     */
+    public function checkForEmail()
+    {
+    //@TODO: implement a proper validation
+        if ( !Input::has('email') )
+            return 'Negative';
+        $user = User::where('email', '=', Input::get('email', null));
+        if($user->count())
+            return 'Positive';
+        return 'Negative';
+    }
+    public function empsubmit()
+    {
+        //echo "hi";
+        $data = Input::all();
+        $validator = Validator::make($data,User::$validationRules);
+        if( $validator->fails() )
+        {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+        $user = new User;
+        $user->first_name        = $data['first_name'];
+        $user->last_name         = $data['last_name'];
+        $user->email             = $data['email'];
+        $user->password          = Hash::make($data['password']);
+        $user->group_id          = 2;
+        $user->company_name      = $data['company_name'];
+        $user->activated         = 1;
+        
+        $user->save();
+        $user = Sentry::findUserById($user->id);
+        //echo $user->activation_code;die();
+        //echo $user->getActivationCode();die();
+
+
+        return Redirect::route('signup.success')->with('email', $user->email);
+        //print_r($data);die();
+    //       $validator = Validator::make(
+    //	    $data,
+    //	    User::$validationRules);
+    }
+    public function submit()
+    {
+        $data = Input::all();
+        //print_r($data['desired_job_type']);echo "<br/><br/>";
+        //print_r($data);die();
+        $validator = Validator::make(
+            $data,
+           User::$validationRules);
+
+        if( $validator->fails() )
+        {
+            return Redirect::back()->withErrors($validator)->withInput();
+        }
+        
+        $workOptions = Option::where('category_id', '=', 1)->get();
+        $user = new User;
+        $user->first_name        = $data['first_name'];
+        $user->last_name         = $data['last_name'];
+        $user->email             = $data['email'];
+        $user->password          = Hash::make($data['password']);
+        $user->group_id          = 1;
+        $user->agnostic          = 0;
+        $user->desired_payment   = Input::get('payment', 0 );
+        $user->english_level     = Input::get('english_level', 0);
+        $user->ethnicity_id      = Input::get('ethnicity', 0);
+        $user->dob               = $data['year_dob'] . '-' . $data['month_dob'] . '-' . $data['date_dob'];
+        $user->gender            = Input::get('gender', 0);
+        $user->contact_frequency = Input::get('emails_per_week', 0);
+        $user->activated         = 1;
+        $user->activated_at      = date("Y-m-d H:i:s");
+        
+        $origin_id = Session::get('origin_id');
+       // echo 'kk'.$origin_id.'mm';
+        if ($origin_id == NULL) {
+        	//$user->origin_id = $data['origin_id'];
+                $user->origin_id = "";
+        }
+        else {
+        	$user->origin_id = $origin_id;
+        }
+        
+        if( isset($data['availability']) )
+        {
+            $user->availability      = $data['availability'];
+            $availabilityDate  = date('Y-m-d');
+            if($data['availability'] == 2)
+            {
+                $availabilityDate = date("Y")."-06-01";
+            }
+            if($data['availability'] == 'other')
+            {
+                $availabilityDate = $data['availability_year'].'-'.sprintf("%02s", $data['availability_month']).'-01';
+            }
+            $user->availability_date   = $availabilityDate;
+        }
+        else
+        {
+            $user->availability  = 0;
+        }
+        if( isset($data['payment']) )
+        {
+            $user->desired_payment = array_sum($data['payment']);
+        }
+        //print_r(Input::all());die();
+        $user->save();
+        //die();
+        //$english_level = Input::get('english_level', 0);
+        //$english_level;die();
+        //print_r($data);die();
+        
+        if( isset($data['languages']) )
+        {
+            //if($english_level>0)
+            //{
+            //    array_push($data['languages'],'32');
+            //    array_push($data['languages_level'],$english_level);
+            //}
+            $user->massUpdateLanguage(Input::get('languages', []), Input::get('languages_level', []), Input::get('language-id', []));
+        }
+        if( isset($data['sport_category']) )
+        {
+            //print_r($data['sport_category']);print_r($data['sport_level']);print_r($data['sport_position']);die();
+            $user->massUpdateSport(Input::get('sport_category', []), Input::get('sport_level', []), Input::get('sport_position', []), Input::get('sport-id', []));
+        }
+        if( isset($data['degree_type']) )
+        {
+            $user->massUpdateDegree(Input::get('degree_type', []), Input::get('degree_uni', []), Input::get('degree_subject', []),
+                Input::get('degree_subject_name', []), Input::get('degree_result', []), Input::get('degree_graduation', []),
+                Input::get('degree-id', []));
+        }
+        if( isset($data['society_category']) )
+        {
+            $user->massUpdateSocial(Input::get('society_category', []), Input::get('society_position', []), Input::get('society_name', []), Input::get('social-id', []));
+        }
+        
+        if( isset($data['work_type']) )
+        {
+            $user->massUpdateWork(Input::get('work_type', []), Input::get('work_length', []), Input::get('work_sector', []),
+            Input::get('work_organisation', []), Input::get('work-experience-id', []));
+        }
+
+
+        if( isset($data['desired_job_type']) )
+        {
+            $_i = 0;
+            foreach($data['desired_job_type'] as $work)
+            {
+                $user->desiredWorkType()->attach($work);
+                $_i++;
+            }
+        }
+        if( isset($data['job_location']) )
+        {
+            foreach($data['job_location'] as $location)
+            {
+                $user->desiredLocation()->attach($location);
+            }
+        }
+        if( isset($data['skills']) )
+        {
+            $_i = 0;
+            foreach($data['skills'] as $skill)
+            {
+                if(isset($data['skill_levels'][$_i]))
+                    $level = $data['skill_levels'][$_i];
+                else
+                    $level = 0;
+                $user->skill()->attach($skill, ['level' => $level]);
+                $_i++;
+            }
+        }
+        if(isset($data['work_option']))
+        {
+            foreach($data['work_option'] as $work_option)
+            {
+                $user->option()->attach($work_option);
+            }
+        }
+        if( isset($data['attributes']) )
+        {
+            foreach($data['attributes'] as $attribute)
+            {
+                $user->option()->attach($attribute);
+            }
+        }
+        if( isset($data['experience']) )
+        {
+            foreach($data['experience'] as $experience)
+            {
+                $user->option()->attach($experience);
+            }
+        }
+        if( isset($data['capabilities']) )
+        {
+            foreach($data['capabilities'] as $attribute)
+            {
+                $user->option()->attach($attribute);
+            }
+        }
+        $options = array();
+        foreach ($workOptions as $workOption)
+        {
+            if( isset($data[str_replace( ' ', '-', strtolower($workOption->group->name) )]) )
+            {
+                $paramName = str_replace( ' ', '-', strtolower($workOption->group->name) );
+                foreach ($data[$paramName] as $param)
+                {
+                    $options[] = Option::find($param);
+                }
+            }
+        }
+
+        $user->massUpdateSchoolQualification(Input::get('qual_type', []), Input::get('qual_subject_type', []), Input::get('qual_subject_name', []), Input::get('qual_result', []), Input::get('school-id', []));
+
+        if( !empty($options) )
+            $user->option()->saveMany(array_unique($options));
+
+        $user = Sentry::findUserById($user->id);
+        //echo $user->activation_code;die();
+        //echo $user->getActivationCode();die();
+       
+       
+        //##################### Temporarily this Mail sending code is closed on 27.02.2015 ###################//
+        //Mail::send('email.activate-html', ['siteName' => 'gradslist.co.uk', 'username'=> $user->first_name, 'email' => $user->email, 'code' => $user->getActivationCode(), 'activationPeriod' => 48], function($message) use($user)
+        //{
+        //    $message->to($user->email)->subject('Welcome to GradList');
+        //});
+         //##################### Temporarily this code is closed on 27.02.2015 ###################//
+         
+        $merge_vars = array('FNAME'=>$user->first_name);
+        $this->subscribe_new($user->email, $merge_vars);
+        
+        return Redirect::route('signup.success')->with('email', $user->email);
+    }
+    
+    public function activate()
+    {
+        $showButton = false;
+        $btnLocation = '';
+        $btnText = 'Log in';
+        try
+        {
+            $user = Sentry::findUserByActivationCode(Input::get('code'));
+            //print_r($user);
+            //echo Input::get('code');die();
+            if ($user->attemptActivation(Input::get('code')))
+            {
+                $_result = 'Your account was activated. <br />You can now login with your credentials';
+                //$mailchimp = new Mailchimp();
+                //    $mailchimp->lists->subscribe(MailchimpCampaign::$list, ['email' => $user->email], [], [], false);
+                $showButton = true;
+                $btnLocation = route('login');
+            }
+            else
+            {
+                $_result = 'An error occurred, please try again later.';
+            }
+        }
+        catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+        {
+            $_result = 'User was not found. <br/> Please, create a profile.';
+            $showButton = true;
+            $btnLocation = route('sign_up');
+            $btnText = 'Sign up';
+        }
+        catch (Cartalyst\Sentry\Users\UserAlreadyActivatedException $e)
+        {
+            $_result = 'User is already activated. Login with your credentials<br /> or reset your password.';
+            $showButton = true;
+            $btnLocation = route('login');
+        }
+        $btnLocation = 'window.location="'.$btnLocation.'"';
+        $data = ['resultMsg' => $_result, 'showButton' => $showButton, 'btnLocation' => $btnLocation, 'buttonText' => $btnText];
+        return View::make('signup.activation.result', $data);
+    }
+}

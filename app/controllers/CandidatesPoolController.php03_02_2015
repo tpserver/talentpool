@@ -1,0 +1,343 @@
+<?php
+
+class CandidatesPoolController extends \BaseController {
+
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @return Response
+	 */
+     private $mailchimp = null;
+    
+	public function __construct()
+	{
+	    $this->beforeFilter('auth');
+	    if( isset(Sentry::getUser()->id) )
+		$this->_user = User::find(Sentry::getUser()->id);
+        
+        $this->mailchimp = new Mailchimp();
+	}
+	
+	public function index()
+	{
+	    $candidatesPools = CandidatesPool::with('option')->with('language')->get();
+	    
+	    $data = [
+		'candidatesPools' => $candidatesPools,
+	    ];
+	    return View::Make('candidates-pool.index', $data);
+	}
+
+
+	/**
+	 * Show the form for creating a new resource.
+	 *
+	 * @return Response
+	 */
+	public function create()
+	{
+            Session::flash('returnTo', route('candidatesPool.index'));
+            return Redirect::to('search');
+	}
+
+
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @return Response
+	 */
+	public function store()
+	{
+	    //$users = Input::get('users');
+	    $users = Session::get('candidates_pool_users');
+	    //$users = implode(",",$users);
+	    $attributes = Input::get('attributes', []);
+	    $capabilities = Input::get('capabilities', []);
+	    $languages = Input::get('language', []);
+	    $language_levels = Input::get('language-level', []);
+	    $workOptions = Input::get('work_option', []);
+	    $workTypeOption = Input::get('work_type_option', []);
+	    $workexperiences = Input::get('experience', []);
+	    $sportLevels = Input::get('sport_level', []);
+	    $sportNames = Input::get('sport_name', []);
+	    $societyCategories = Input::get('society_category', []);
+	    $societyPositions = Input::get('society_position', []);
+	    $skills = Input::get('skills', []);
+	    $schoolSubject = Input::get('school-subject', []);
+	    $universityDegreeTypes = Input::get('degree_type', []);
+	    $universityDegreeresults = Input::get('degree_result', []);
+	    $universitysubjects = Input::get('university-subject', []);
+	    //print_r($schoolSubject);die();
+	    $min_workLength = Input::get('min-work-length',[]);
+	    $max_workLength = Input::get('max-work-length',[]);
+	    $workLength = array_merge($min_workLength,$max_workLength);
+	    //print_r($workLength);die();
+	    $candidatesPool = new CandidatesPool;
+	    $candidatesPool->name = Input::get('name');
+	    $candidatesPool->user_id = $this->_user->id;
+    
+	    $candidatesPool->save();
+	    //$users = explode(',', $users);
+	    $emails = array();
+	    foreach ($users as $user)
+        {
+		      $candidatesPool->users()->attach($user);
+                $email_id = DB::table('users')->where('id', '=', $user)->first();
+                $this->subscribe_new($email_id->email,$email_id->first_name);
+                $emails[]['email'] = $email_id->email;
+        }
+    
+	    $options = array_merge($attributes, $capabilities, $workOptions, $workexperiences, $schoolSubject);
+	    foreach( $options as $option )
+		$candidatesPool->option()->attach($option);
+	    foreach($workLength as $workduration)
+		$candidatesPool->workLength()->attach($workduration);
+	    foreach($workTypeOption as $workOption)
+		$candidatesPool->workType()->attach($workOption);
+	    foreach($sportLevels as $sportLevel)
+		$candidatesPool->sportLevel()->attach($sportLevel);
+	    foreach($sportNames as $sportName)
+		$candidatesPool->sportName()->attach($sportName);
+	    foreach($societyCategories as $societyCategory)
+		$candidatesPool->socialCategory()->attach($societyCategory);
+	    foreach($societyPositions as $socialPosition)
+		$candidatesPool->socialPosition()->attach($socialPosition);
+	    foreach($skills as $skill)
+		$candidatesPool->skill()->attach($skill);
+	    foreach($universityDegreeTypes as $universityDegreeType)
+		$candidatesPool->degreeTypes()->attach($universityDegreeType);
+	    foreach($universityDegreeresults as $universityDegreeresult)
+		$candidatesPool->degreeResults()->attach($universityDegreeresult);
+	    foreach($universitysubjects as $universitysubject)
+		$candidatesPool->degreeSubjects()->attach($universitysubject);
+	    //$i=0;
+	//    foreach( $languages as $language)
+	//    {
+	//	
+	//        $candidatesPool->languages()->attach($language);
+	//	//$i++;
+	//    }
+	    $segment_name = Input::get('name').'-'.$candidatesPool->id;
+	    Session::set('candidates-pool', $candidatesPool->id);
+        
+        $segment_id = $this->add_static_segment($segment_name, $emails);
+        //print_r($emails);
+        //print_r($segment_id);
+        //die();
+        //print_r($emails);
+        //echo $segment_id;
+        $candidatesPool->mailchimp_segment_id = $segment_id;
+        $candidatesPool->save();
+        //die();
+	    //if( Input::get('returnTo', '') != '' )
+	    //    return Redirect::to( route(Input::get('returnTo')) );
+	    //
+	    return Redirect::to(route('new-campaign.email'));
+	    //return Redirect::to(route('new-campaign.candidates'));
+	}
+    public function add_static_segment($segemntname,$batch)//$campaign_name,$batch
+    {
+       
+       $id='049fed5a79';//test-talentpool-mj list id
+       //$batch[]=array('email'=>'saurav.dikshit@esolzmail.com');
+       $name = $segemntname;//name of the segment(here use the campaign name)
+       
+       $segment=$this->mailchimp->lists->staticSegmentAdd($id,$segemntname);
+       //sample success response :Array ( [id] => 15089 )
+       //$segment['id']='29005';
+        
+       $this->mailchimp->lists->staticSegmentMembersAdd($id,$segment['id'],$batch);
+        return $segment['id'];
+    //die();
+       //sample success response :Array ( [success_count] => 1 [error_count] => 0 [errors] => Array ( ) )
+       
+    }
+    public function subscribe_new($user_email,$fname)
+    {
+       
+       $id='049fed5a79';//test-talentpool-mj list id
+       
+        $batch=array('email'=>$user_email);
+        $merge_vars = array('FNAME'=>$fname);
+        $batches[]=array('email'=>$user_email);
+        $exist_check = $this->mailchimp->lists->memberInfo($id, $batches);
+        if($exist_check['success_count']==0)
+        {
+            //print_r($this->mailchimp->lists->subscribe($id,$batch,'','','','',''));
+            //$value = $this->mailchimp->lists->subscribe($id,$batch,$merge_vars,'','','','');
+            try {
+                $this->mailchimp->lists->subscribe($id,$batch,$merge_vars,'','','','');
+            } catch (Exception $e) {
+                //echo 'Caught exception: ',  $e->getMessage(), "\n";
+            }
+            /*try($this->mailchimp->lists->subscribe($id,$batch,$merge_vars,'','','',''))
+            {
+                
+            }
+            catch
+            {
+                //echo 'email id invalid'; die();
+            }*/
+            //print_r($value);
+            //die();
+        }
+       //$batch[]=array('email'=>array('email' => 'saurav.dikshit@esolzmail.com'));
+      //($id, $email, $merge_vars=null, $email_type='html', $double_optin=true, $update_existing=false, $replace_interests=true, $send_welcome=false)
+       
+       
+       // die();
+    }
+    
+    public function edit_store()
+	{
+	    //$users = Input::get('users');
+	    $users = Session::get('candidates_pool_users');
+	    //$users = implode(",",$users);
+	    $attributes = Input::get('attributes', []);
+	    $capabilities = Input::get('capabilities', []);
+	    $languages = Input::get('language', []);
+	    $language_levels = Input::get('language-level', []);
+	    $workOptions = Input::get('work_option', []);
+	    $workTypeOption = Input::get('work_type_option', []);
+	    $workexperiences = Input::get('experience', []);
+	    $sportLevels = Input::get('sport_level', []);
+	    $sportNames = Input::get('sport_name', []);
+	    $societyCategories = Input::get('society_category', []);
+	    $societyPositions = Input::get('society_position', []);
+	    $skills = Input::get('skills', []);
+	    $schoolSubject = Input::get('school-subject', []);
+	    $universityDegreeTypes = Input::get('degree_type', []);
+	    $universityDegreeresults = Input::get('degree_result', []);
+	    $universitysubjects = Input::get('university-subject', []);
+	    //print_r($schoolSubject);die();
+	    $min_workLength = Input::get('min-work-length',[]);
+	    $max_workLength = Input::get('max-work-length',[]);
+	    $workLength = array_merge($min_workLength,$max_workLength);
+	    //print_r($workLength);die();
+	    $candidatesPool = CandidatesPool::find(Input::get('candidatepool_id'));
+	    //$candidatesPool = new CandidatesPool;
+	    $candidatesPool->name = Input::get('name');
+	    $candidatesPool->user_id = $this->_user->id;
+	//    print_r(Input::all());die();
+	    $candidatesPool->save();
+	//    //$users = explode(',', $users);
+	//
+	    $candidatesPool->users()->detach();
+	    foreach ($users as $user)
+		$candidatesPool->users()->attach($user);
+	    
+	    $options = array_merge($attributes, $capabilities, $workOptions, $workexperiences, $schoolSubject);
+	    $candidatesPool->option()->detach();
+	    foreach( $options as $option )
+		$candidatesPool->option()->attach($option);
+	    
+	    $candidatesPool->workLength()->detach();
+	    foreach($workLength as $workduration)
+		$candidatesPool->workLength()->attach($workduration);
+	    
+	    $candidatesPool->workType()->detach();
+	    foreach($workTypeOption as $workOption)
+		$candidatesPool->workType()->attach($workOption);
+	    
+	    $candidatesPool->sportLevel()->detach();
+	    foreach($sportLevels as $sportLevel)
+		$candidatesPool->sportLevel()->attach($sportLevel);
+		
+	    $candidatesPool->sportName()->detach();
+	    foreach($sportNames as $sportName)
+		$candidatesPool->sportName()->attach($sportName);
+		
+	    $candidatesPool->socialCategory()->detach();
+	    foreach($societyCategories as $societyCategory)
+		$candidatesPool->socialCategory()->attach($societyCategory);
+		
+	    $candidatesPool->socialPosition()->detach();
+	    foreach($societyPositions as $socialPosition)
+		$candidatesPool->socialPosition()->attach($socialPosition);
+		
+	    $candidatesPool->skill()->detach();
+	    foreach($skills as $skill)
+		$candidatesPool->skill()->attach($skill);
+		
+	    $candidatesPool->degreeTypes()->detach();
+	    foreach($universityDegreeTypes as $universityDegreeType)
+		$candidatesPool->degreeTypes()->attach($universityDegreeType);
+		
+	    $candidatesPool->degreeResults()->detach();
+	    foreach($universityDegreeresults as $universityDegreeresult)
+		$candidatesPool->degreeResults()->attach($universityDegreeresult);
+		
+	    $candidatesPool->degreeSubjects()->detach();
+	    foreach($universitysubjects as $universitysubject)
+		$candidatesPool->degreeSubjects()->attach($universitysubject);
+	    //$i=0;
+	//    foreach( $languages as $language)
+	//    {
+	//	
+	//        $candidatesPool->languages()->attach($language);
+	//	//$i++;
+	//    }
+	
+	    Session::set('candidates-pool', $candidatesPool->id);
+	    //if( Input::get('returnTo', '') != '' )
+	    //    return Redirect::to( route(Input::get('returnTo')) );
+	    //
+	    //return Redirect::to(route('new-campaign.email'));
+	    return Redirect::to(route('new-campaign.candidates'));
+	}
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function show($id)
+	{
+            $candidatesPool = CandidatesPool::find($id);
+            $candidatesPoolUserCount = CandidatesPool::with('users')->find($id);
+            $candidatesPool['userCount'] = $candidatesPool->users()->count();
+            if(Request::ajax())
+                return $candidatesPool;
+            return $candidatesPool;
+	}
+
+
+	/**
+	 * Show the form for editing the specified resource.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function edit($id)
+	{
+		//
+	}
+
+
+	/**
+	 * Update the specified resource in storage.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function update($id)
+	{
+		//
+	}
+
+
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int  $id
+	 * @return Response
+	 */
+	public function destroy($id)
+	{
+            $candidatesPool = CandidatesPool::find($id);
+            $candidatesPool->delete();
+            return Redirect::to(route('candidatesPool.index'));
+	}
+
+
+}

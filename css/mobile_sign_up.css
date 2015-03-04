@@ -1,0 +1,58 @@
+body {
+	width: 960px;
+}
+
+#personal_box {
+	width: 800px;
+}
+
+.sector_sub_box {
+	width: 800px;
+	height: 700px;
+}
+
+input[type="text"], input[type="password"] {
+	height: 110px;
+	font-size: 50px;
+	line-height: 100%;
+	padding-top: 10px;
+	width: 750px;
+	margin-left: 20px;
+}
+
+#form_div_header {
+	font-size: 80px;
+	font-weight: normal;
+}
+
+.sector_grouping_header {
+	font-size: 80px;
+	width: 800px;
+	float: left;
+	padding-bottom: 120px;
+}
+
+input[type="checkbox"] {
+	width: 80px;
+	height: 80px;
+}
+
+.checkbox {
+	font-size: 60px;
+	width: 800px;
+	clear: both;
+}
+
+#next_button_basic {
+	font-size: 80px;
+	width: 800px;
+	height: 300px;
+}
+
+#logo {
+	width: 800px;
+	height: 300px;
+	background-image:url('../img/gl_logo_main_retina.png');
+	float: left;
+	margin-left: 10px;
+}

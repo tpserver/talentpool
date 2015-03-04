@@ -1,0 +1,179 @@
+<?php
+
+class SessionController extends \BaseController {
+
+    public function __construct()
+    {
+        $this->beforeFilter('auth', [ 'except' => ['create', 'store', 'sendRecoverPassword', 'setNewPassword', 'recoverPassword', 'saveNewPassword'] ]);
+    }
+
+    public function create()
+    {
+        if (!Sentry::check())
+        {
+            return View::make('login.index')->with('error', '');
+        }
+        else
+        {
+            return Redirect::route('homepage');
+        }
+    }
+   
+    public function store()
+    {
+        $rules = [
+            'email' => 'required|email',
+            'password' => 'required|min:3'
+        ];
+
+        $messages = [
+            'email.required' => 'Invalid email',
+        ];
+
+        $validator = Validator::make(Input::only('email', 'password'), $rules, $messages);
+        $errorMsg = '';
+        if ($validator->fails()) {
+            //return Redirect::route('session')->withErrors($validator)->withInput(Input::except('password'));
+            return Redirect::route('session.create')->withErrors($validator)->withInput(Input::except('password'))->with('error', $errorMsg);   //change 27.02.2015
+        } else {
+            $credentials = [ 'email'    => Input::get('email'),
+                             'password' => Input::get('password')
+                           ];
+            try
+            {
+                $user = Sentry::authenticate($credentials, false);
+            }
+            catch (Cartalyst\Sentry\Users\LoginRequiredException $e)
+            {
+                $errorMsg = 'Login field is required.';
+            }
+            catch (Cartalyst\Sentry\Users\PasswordRequiredException $e)
+            {
+                $errorMsg = 'Password field is required.';
+            }
+            catch (Cartalyst\Sentry\Users\WrongPasswordException $e)
+            {
+                $errorMsg = 'Wrong password, try again.';
+            }
+            catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+            {
+                $errorMsg = 'User was not found.';
+            }
+            catch (Cartalyst\Sentry\Users\UserNotActivatedException $e)
+            {
+                $errorMsg = 'User is not activated.';
+            }
+
+            catch (Cartalyst\Sentry\Throttling\UserSuspendedException $e)
+            {
+                $errorMsg = 'User is suspended.';
+            }
+            catch (Cartalyst\Sentry\Throttling\UserBannedException $e)
+            {
+                $errorMsg = 'User is banned.';
+            }
+
+            if( isset($user) )
+            {
+                if (!Sentry::check())
+                {
+                    return Redirect::route('login');
+                }
+                else
+                {
+                    //echo Sentry::getUser()->group_id;
+                    if(Sentry::getUser()->group_id==1)
+                    {
+                        //echo Sentry::getUser()->group_id;die();
+                        return Redirect::route('profile.edit');
+                    }
+                    if(Sentry::getUser()->group_id==2)
+                    {
+                        /*return Redirect::route('employers.settings');*/
+                        return Redirect::route('campaign');
+                    }
+                    else
+                    {
+                        $this->destroy();
+                    }
+                }
+            }
+        }
+        return Redirect::route('session.create')->withErrors($validator)->withInput(Input::except('password'))->with('error', $errorMsg);
+    }
+
+    public function destroy()
+    {
+        Sentry::logout();
+        return Redirect::route('homepage');
+    }
+
+    public function recoverPassword()
+    {
+        $email = Input::get('email');
+        
+        $data = ['email' => $email];
+        
+        return View::make('login.recover-password.index', $data);
+    }
+
+    public function setNewPassword()
+    {
+        return View::make('login.recover-password.set-new-password');
+    }
+
+    public function sendRecoverPassword()
+    {
+        $resultMsg = 'An email was sent. Please check your email for instructions.';
+        try
+        {
+            $user = Sentry::findUserByLogin(Input::get('email'));
+
+            $resetCode = $user->getResetPasswordCode();
+
+            Mail::send('email.password-reset-code-html', ['siteName' => 'talentpool.com', 'resetLink' => route('login.setNewPassword', ['code' => $resetCode])], function($message) use($user)
+            {
+                $message->from('contact@talentpool.com', 'TalentPool');
+                $message->to($user->email)->subject('TalentPool - Reset Password');
+            });
+        }
+        catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+        {
+            $resultMsg = 'User was not found.';
+        }
+
+        return View::make('login.recover-password.index')->with('resultMsg', $resultMsg);
+    }
+
+    public function saveNewPassword()
+    {
+        $resultMsg = '';
+        try
+        {
+            $user = Sentry::findUserByLogin(Input::get('email'));
+            if ( $user->checkResetPasswordCode(Input::get('code')) )
+            {
+                if ($user->attemptResetPassword(Input::get('code'), Input::get('password')))
+                {
+                    $user->clearResetPassword();
+                    $user->save();
+                    return View::make('login.recover-password.success');
+                }
+                else
+                {
+                    $resultMsg = 'An error occurred, please try again later';
+                }
+            }
+            else
+            {
+                $resultMsg = 'Invalid code, please send a new request for password reset';
+            }
+        }
+        catch (Cartalyst\Sentry\Users\UserNotFoundException $e)
+        {
+            $resultMsg =  'User was not found.';
+        }
+        return View::make('login.recover-password.set-new-password')->withInput(Input::except('password'))->with('resultMsg', $resultMsg);
+    }
+
+}

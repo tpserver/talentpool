@@ -1,0 +1,445 @@
+<?php
+
+use Illuminate\Auth\UserTrait;
+use Illuminate\Auth\UserInterface;
+use Illuminate\Auth\Reminders\RemindableTrait;
+use Illuminate\Auth\Reminders\RemindableInterface;
+
+class User extends Eloquent implements UserInterface, RemindableInterface {
+
+    use UserTrait, RemindableTrait;
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+    protected $table = 'users';
+
+    /**
+     * The attributes excluded from the model's JSON form.
+     *
+     * @var array
+     */
+    protected $hidden = array('password', 'remember_token');
+    protected $fillable = ['first_name', 'last_name', 'english_level', 'gender', 'ethnicity_id', 'agnostic', 
+        'desired_payment', 'desired_payment', 'dob'];
+    public $timestamps = true;
+
+    public static  $validationRules =  [
+        'first_name' => 'required|max:50|min:3',
+        'last_name' => 'required|max:50|min:3',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|min:6',
+    ];
+
+    const CONTACT_UNLIMITED = 0;
+    const CONTACT_WEEKLY = 0;
+    const CONTACT_MONTHLY = 0;
+
+
+    /**
+     * @param array $qualificationTypes
+     * @param array $subjectTypes
+     * @param array $subjectNames
+     * @param array $qualificationResults
+     * @param array $schoolsId
+     */
+    public function massUpdateSchoolQualification(array $qualificationTypes, array $subjectTypes, array $subjectNames = [],
+                                                  array $qualificationResults, array $schoolsId = [])
+    {
+        $schoolQualifications = [];
+        $qualificationTypes = $qualificationTypes;
+        $qualificationSubjectTypes = $subjectTypes;
+        $qualificationSubjectNames = $subjectNames;
+        $qualificationIds = $schoolsId;
+        $schoolQualificationScore = 0;
+
+        $i = 0;
+        foreach ($qualificationTypes as $qual_type) {
+            if( !is_numeric($qualificationSubjectTypes[$i]) )
+                $qualificationSubjectType = SchoolSubject::create([ 'name' => $qualificationSubjectTypes[$i], 'approved' => 0]);
+            else
+                $qualificationSubjectType = SchoolSubject::find($qualificationSubjectTypes[$i]);
+
+            if( !is_numeric($qual_type) )
+                $qualificationType = SchoolQualificationType::create([ 'name' => $qual_type, 'approved' => 0]);
+            else
+                $qualificationType = SchoolQualificationType::find($qual_type);
+
+            if( !is_numeric($qualificationResults[$i]) )
+            {
+                $qualificationResult = SchoolQualificationResult::create([ 'name' => $qualificationResults[$i], 'approved' => 0]);
+                $qualificationResult->school_qualification_type_id = $qualificationType->id;
+                $qualificationResult->save();
+            }
+            else
+                $qualificationResult = SchoolQualificationResult::find($qualificationResults[$i]);
+
+            //New record
+            if ( !isset($qualificationIds[$i]) || $qualificationIds[$i] == 0)
+                $schoolQualification = new SchoolQualification;
+            else
+                $schoolQualification = SchoolQualification::find($qualificationIds[$i]);
+			
+			if($qualificationType !== null)
+            $schoolQualification->type()->associate($qualificationType);
+            if($qualificationSubjectType !== null)
+            $schoolQualification->subjectType()->associate($qualificationSubjectType);
+            $schoolQualification->subject = $qualificationSubjectNames[$i];
+            if($qualificationResult !== null)
+            $schoolQualification->result()->associate($qualificationResult);
+            $schoolQualification->save();
+            $schoolQualifications[] = $schoolQualification->id;
+
+            $schoolQualificationScore += $qualificationResult->score;
+            $i++;
+        }
+        $this->schoolQualification()->sync($schoolQualifications);
+        $this->degree_score = $schoolQualificationScore;
+    }
+
+    /**
+     * @param array $languageNames
+     * @param array $languagesLevels
+     * @param array $languageIds
+     */
+    public function massUpdateLanguage(array $languageNames, array $languagesLevels = [], array $languageIds = [])
+    {
+        $i = 0;
+        $langs = [];
+        foreach ($languageNames as $language) {
+
+            if( !is_numeric($language) )
+                $languageName = LanguageName::create([ 'name' => $language, 'approved' => 0]);
+            else
+                $languageName = LanguageName::find($language);
+
+            if (isset($languagesLevels[$i]) && $languagesLevels[$i] > 0) $level = $languagesLevels[$i]; else $level = 0;
+            if ( !isset($languageIds[$i]) || $languageIds[$i] == 0)
+                $lang = new Language();
+            else
+                $lang = Language::find($languageIds[$i]);
+            if ($level > 0)
+                $lang->level()->associate(LanguageLevel::find($level));
+            if ($languageName !== null)
+            $lang->name()->associate($languageName);
+            if ( ( !isset($languageIds[$i]) || $languageIds[$i] == 0 ) || (isset($lang->user[0]->id) && $lang->user[0]->id == $this->id) ) {
+                $lang->save();
+                $langs[] = $lang->id;
+            }
+            $i++;
+        }
+        $this->language()->sync($langs);
+    }
+
+    /**
+     * @param array $skills
+     * @param array $skillsLevels
+     */
+    public function massUpdateSkills(array $skills, array $skillsLevels = [])
+    {
+        $i = 0;
+        $userSkills = [];
+        //foreach ($skills as $skill) {
+        //    if( isset($skillsLevels[$i]) )
+        //        $level = $skillsLevels[$i];
+        //    else
+        //        $level = 0;
+        //    $userSkills[$skill] = ['level' => $level];
+        //    $i++;
+        //}
+	foreach ($skills as $skill) {
+            if( isset($skillsLevels[$skill-1]) )
+                $level = $skillsLevels[$skill-1];
+            else
+                $level = 0;
+            $userSkills[$skill] = ['level' => $level];
+            $i++;
+        }
+        $this->skill()->sync($userSkills);
+    }
+
+    /**
+     * @param array $degreeTypes
+     * @param array $degreeUnis
+     * @param array $degreesSubjects
+     * @param array $degreeSubjectNames
+     * @param array $degreeResults
+     * @param array $degreeGraduations
+     * @param array $degreeIds
+     */
+    public function massUpdateDegree(array $degreeTypes, array $degreeUnis, array $degreesSubjects, array $degreeSubjectNames,
+                array $degreeResults, array $degreeGraduations, array $degreeIds)
+    {
+        $i = 0;
+        $degrees = [];
+        foreach($degreeTypes as $degreeType)
+        {
+
+            if( !is_numeric($degreeType) )
+                $degreeType = DegreeType::create([ 'name' => $degreeType, 'approved' => 0]);
+            else
+                $degreeType = DegreeType::find($degreeType);
+
+            if( !is_numeric($degreeUnis[$i]) )
+            {
+                $degreeUni = University::create([ 'name' => $degreeUnis[$i], 'approved' => 0]);
+                $degreeUni->country()->associate(Country::find(Country::$OTHER));
+            }
+            else
+                $degreeUni = University::find($degreeUnis[$i]);
+
+            if( !is_numeric($degreeResults[$i]) )
+                $degreeResult = DegreeResult::create([ 'name' => $degreeResults[$i], 'approved' => 0]);
+            else
+                $degreeResult = DegreeResult::find($degreeResults[$i]);
+
+            if( !is_numeric($degreesSubjects[$i]) )
+                $degreesSubject = DegreeSubject::create([ 'name' => $degreesSubjects[$i], 'approved' => 0]);
+            else
+                $degreesSubject = DegreeSubject::find($degreesSubjects[$i]);
+
+            if( isset($degreeIds[$i]) && $degreeIds[$i] > 0 )
+                $degree = Degree::find($degreeIds[$i]);
+            else
+                $degree = new Degree();
+			
+			if($degreeType !== null)
+            	$degree->type()->associate($degreeType);
+            if($degreeUni !== null)
+            $degree->university()->associate($degreeUni);
+            if($degreeResult !== null)
+            $degree->result()->associate($degreeResult);
+            if($degreesSubject !== null)
+            $degree->subject()->associate($degreesSubject);
+            $degree->name = $degreeSubjectNames[$i];
+            $degree->degree_year = $degreeGraduations[$i];
+            if ($degreesSubject !== null && $degreeResult !== null)
+            	{
+            	$degree->save();
+            	$degrees[] = $degree->id;
+            	}
+            $i++;
+        }
+        $this->university()->sync($degrees);
+    }
+
+    /**
+     * @param array $socialCategories
+     * @param array $socialPosition
+     * @param array $socialNames
+     * @param array $socialIds
+     */
+    public function massUpdateSocial(array $socialCategories, array $socialPosition, array $socialNames = [], array $socialIds = [])
+    {
+        $i = 0;
+        $socials = [];
+        foreach ($socialCategories as $socialCategory)
+            {
+
+            if( !is_numeric($socialCategory) )
+                $socialCat = SocialCategory::create([ 'name' => $socialCategory, 'approved' => 0]);
+            else
+                $socialCat = SocialCategory::find($socialCategory);
+
+            if( !is_numeric($socialPosition[$i]) )
+                $socialPos = SocialPosition::create([ 'name' => $socialPosition[$i], 'approved' => 0]);
+            else
+                $socialPos = SocialPosition::find($socialPosition[$i]);
+
+            if( isset( $socialIds[$i] ) && $socialIds[$i] > 0 )
+                $social = Social::find($socialIds[$i]);
+            else
+                $social = new Social();
+			if($socialCat !== null)
+            	$social->category()->associate($socialCat);
+            if($socialPos !== null)
+            $social->position()->associate($socialPos);
+            $social->name = $socialNames[$i];
+            $social->save();
+            $socials[] = $social->id;
+            $i++;
+        }
+        $this->social()->sync($socials);
+    }
+
+    /**
+     * @param array $sportNames
+     * @param array $sportLevels
+     * @param array $sportPositions
+     * @param array $sportIds
+     */
+    public function massUpdateSport(array $sportNames, array $sportLevels, array $sportPositions, array $sportIds = [])
+    {
+        $i = 0;
+        $userSports = [];
+        foreach ($sportNames as $sportName)
+        {
+            if( isset($sportLevels[$i]) )$level = $sportLevels[$i];else $level = 0;
+
+            if( !is_numeric($sportName) )
+                $sportName = SportName::create([ 'name' => $sportName, 'approved' => 0]);
+            else
+                $sportName = SportName::find($sportName);
+
+            if( !is_numeric($sportPositions[$i]) )
+                $sportPosition = SportPosition::create([ 'name' => $sportPositions[$i], 'approved' => 0]);
+            else
+                $sportPosition = SportPosition::find($sportPositions[$i]);
+
+            if( !is_numeric($level) )
+                $sportLevel = SportLevel::create([ 'name' => $level, 'approved' => 0]);
+            else
+                $sportLevel = SportLevel::find($level);
+
+            if( isset($sportIds[$i]) && $sportIds[$i] > 0 )
+                $sport = Sport::find($sportIds[$i]);
+            else
+                $sport = new Sport();
+			if($sportName !== null)
+            	$sport->name()->associate($sportName);
+            if($sportPosition !== null)
+            $sport->position()->associate($sportPosition);
+            if($level > 0)
+                $sport->level()->associate($sportLevel);
+            $sport->save();
+            $userSports[] = $sport->id;
+            $i++;
+        }
+        $this->sport()->sync($userSports);
+    }
+
+    /**
+     * @param array $workTypes
+     * @param array $workDurations
+     * @param array $workSectors
+     * @param array $workNames
+     * @param array $workIds
+     */
+    public function massUpdateWork(array $workTypes, array $workDurations, array $workSectors = [], array $workNames = [], array $workIds = [])
+    {
+    
+        $i = 0;
+        $works = [];
+	//print_r($workTypes);
+	//print_r($workDurations);
+	//print_r($workSectors);
+	//print_r($workIds);
+	//print_r($workNames);die();
+       // foreach($workTypes as $workType)
+       // {
+	foreach($workNames as $workName)
+     {
+            if( !is_numeric($workTypes[$i]) )
+                $workType = WorkType::create([ 'name' => $workTypes[$i], 'approved' => 0]);
+            else
+                $workType = WorkType::find($workTypes[$i]);
+	    //echo $i;
+            if( !is_numeric($workSectors[$i]) )
+                $workSector = WorkSector::create([ 'name' => $workSectors[$i], 'approved' => 0]);
+            else
+                $workSector = WorkSector::find($workSectors[$i]);
+
+            if( isset($workIds[$i]) && $workIds[$i] > 0 )
+                $work = Work::find($workIds[$i]);
+            else
+                $work = new Work();
+			if(WorkDuration::find($workDurations[$i]) !== null)
+            	$work->duration()->associate(WorkDuration::find($workDurations[$i]));
+           	if($workType !== null)
+            	$work->type()->associate($workType);
+            if($workSector !== null)
+            	$work->sector()->associate($workSector);
+            $work->name = $workNames[$i];
+            $work->save();
+            $works[] = $work->id;
+            $i++;
+        }
+	//die();
+        $this->work()->sync($works);
+    }
+
+    /**
+     * @param string $availability
+     * @param string $month mm format
+     * @param string $year yyyy format
+     */
+    public function updateAvailability($availability = 'other', $month='00', $year='0000')
+    {
+        if($availability == 1)
+            $availabilityDate  = date('Y-m-d');
+        else
+            $availabilityDate = $year . '-' . $month . '-01';
+        $this->availability = $availability;
+        $this->availability_date = $availabilityDate;
+    }
+
+    public function sport()
+    {
+        return $this->belongsToMany('Sport', 'user_sport');
+    }
+    
+    public function social()
+    {
+        return $this->belongsToMany('Social', 'user_social');
+    }
+    
+    public function degree()
+    {
+        return $this->belongsToMany('Degree', 'user_degree');
+    }
+    
+    public function ethnicity()
+    {
+        return $this->hasOne('Ethnicity');
+    }
+    
+    public function option()
+    {
+        return $this->belongsToMany('Option', 'user_option');
+    }
+    public function workType()
+    {
+        return $this->belongsToMany('WorkType', 'user_desired_work_type');
+    }
+    public function work()
+    {
+        return $this->belongsToMany('Work', 'user_work');
+    }
+    
+    public function language()
+    {
+        return $this->belongsToMany('Language', 'user_language');
+    }
+    public function location()
+    {
+        return $this->belongsToMany('Location', 'user_desired_location');
+    }     
+    public function skill()
+    {
+        return $this->belongsToMany('Skill', 'user_skill')->withPivot('level');
+    }
+    public function university()
+    {
+        return $this->belongsToMany('Degree', 'user_degree');
+    }
+ 
+    public function schoolQualification()
+    {
+        return $this->belongsToMany('SchoolQualification', 'user_school_qualification');
+    }
+    public function desiredWorkType()
+    {
+        return $this->belongsToMany('WorkType', 'user_desired_work_type');
+    }
+    public function desiredLocation()
+    {
+        return $this->belongsToMany('Location', 'user_desired_location');
+    }
+    
+    public function userOptionsIds()
+    {
+        return $this->belongsToMany('Option', 'user_option');
+    }
+}

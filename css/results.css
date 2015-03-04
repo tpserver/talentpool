@@ -1,0 +1,80 @@
+#results_container {
+	width: 998px;
+	height: 500px;
+	background-color: #fff;
+	border: 1px solid #d2d2d2;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+}
+
+.filter_summary {
+	width: 249px;
+	float: left;
+}
+
+.filter_summary .title {
+	float: left;
+	width: 193px;
+	font-size: 15px;
+	padding-left: 15px;
+	font-weight: bold;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #d2d2d2;
+}
+
+.more_arrow {
+	float: left;
+	height: 36px;
+	width: 40px;
+	background-image:url('../img/more_triangle_up.png');
+	background-position: center;
+	background-repeat: no-repeat;
+	border-bottom: 1px solid #d2d2d2;
+	
+}
+
+#filter_container {
+	width: 249px;
+	float: left;
+	border-right: 1px solid #d2d2d2;
+	height: 100%;
+}
+
+.personal {
+	border-top: 10px solid #f39c12;
+}
+
+.education {
+	border-top: 10px solid #1abc9c;
+}
+
+.extra-curricular {
+	border-top: 10px solid #9b59b6;
+}
+
+.experience {
+	border-top: 10px solid #3498d8;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0px 0px 15px 16px;
+	font-size: 14px;
+	clear: both;
+}
+
+li {
+	line-height: 25px;
+}
+
+
+.filter_category_detail {
+	margin-top: 10px;
+}
+
+#results_table {
+	width: 745px;
+	float: left;
+}

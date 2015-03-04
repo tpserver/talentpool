@@ -1,0 +1,188 @@
+@extends('layouts.employer')
+@section('head.content')
+    {{ HTML::script('js/vendor/tinymce/js/tinymce/tinymce.min.js') }}
+    {{ HTML::style('js/vendor/codemirror/lib/codemirror.css') }}
+    {{ HTML::script('js/vendor/codemirror/lib/codemirror.js') }}
+    {{ HTML::script('js/vendor/codemirror/mode/htmlembedded/htmlembedded.js') }}
+    <script type="text/javascript">
+    
+    window.onload = function() {
+                    window.editor = CodeMirror.fromTextArea(code_textarea, {
+                        mode: "htmlembedded",
+                        theme: "default",
+                        lineNumbers: true
+                    });
+                };
+    
+    tinymce.init({
+
+        selector: 'textarea.mceEditor',
+        menubar: false,
+        //menubar: true,
+        plugins: ['anchor link code table contextmenu'],
+        //plugins: ["advlist autolink lists link image charmap print preview anchor",
+        //"searchreplace visualblocks code fullscreen",
+        //"insertdatetime media table contextmenu paste moxiemanager"],
+        //toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+        toolbar: 'undo redo | bold italic | hr | alignleft aligncenter alignright alignjustify | bullist numlist | link ',
+        height: '200',
+        theme: 'modern',
+        skin: 'light',
+        statusbar: false,
+    });
+</script>
+        {{ HTML::style('css/email_create.css') }}
+    <style>
+            #new_email_box {
+                background-color: #fff;
+                padding-top: 40px;
+                padding-left: 15px;
+                width: 1130px;
+                margin-top: 15px;
+                clear: both;
+                background-image:url("../img/compose_mail_bg.png") ;
+                background-repeat: repeat-x;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #email-template-name, #email-template-subject, #email-template-name-error, #email-template-subject-error {
+                width: 1100px;
+            }
+
+            #email-template-text, #email-template-body-error {
+                width: 1100px;
+                margin-bottom: 0px;
+            }
+            
+            #email-template-body-error {
+                height: 233px;
+            }
+            
+            #email_button_holder {
+                padding-left: 15px;
+                padding-right: 15px;
+                width: 860px;
+                margin-top: 15px;
+                clear: both;
+                background-repeat: no-repeat;
+                width: 790px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #new-email-template-cancel-btn {
+                float: right;
+            }
+
+            button {
+                font-family: "Lato", Arial,Helvetica,sans-serif;
+            }
+            
+        </style>
+@stop    
+@section('content')
+    <h1>Campaigns / New Campaign</h1>
+    @include('common.progress_indicator')
+        {{ Form::open(['url' => 'email-template', 'id' => 'new_email_form']) }}
+
+    <div id="new_email_box">
+        <!--<div class="create-control-buttons-container float-left"  id="email_button_holder" style="margin-bottom:10px;">
+            Need help! Here you create your own email template or messages what you want to send to the candidates. You can add your own html by clicking in tools->source code button or you can write it into the editor box.
+            
+        </div>-->
+        <!--<div id="template_name_box" class="text_input_container">
+            <div class="error_overlay" @if(($errors->first('name'))){{'style="display: block;"'}}@endif id="email-template-name-error">Template name required</div>
+            {{ Form::text('name', Input::old('name'), ['placeholder' => 'Template Name', 'id' => 'email-template-name']) }}
+        </div>-->
+        <div class="text_input_container">
+            <div class="error_overlay" @if(($errors->first('subject'))){{'style="display: block;"'}}@endif id="email-template-subject-error">Email subject required</div>
+            {{ Form::text('subject', Input::old('subject'), ['placeholder' => 'Email Subject', 'id' => 'email-template-subject']) }}
+        </div>
+        @if(isset($emailTemplate))
+        <div id="email_tab_container">
+        		<div id="left_email_tab" class="<?php echo (($emailTemplate->email_text_type==2)?'email-type selected':'email-type unselected');?>" onclick="richText(this.id);">Rich Text</div>
+                <div id="right_email_tab" class="<?php echo (($emailTemplate->email_text_type==1)?'email-type selected':'email-type unselected');?>" onclick="richText(this.id);">HTML</div>
+                <input type="hidden" value="{{$emailTemplate->email_text_type}}" name="email_text_type" id="email_text_type" />
+        </div>  
+        @else
+        <div id="email_tab_container">
+        		<div id="left_email_tab" class="email-type unselected" onclick="richText(this.id);">Rich Text</div>
+                <div id="right_email_tab" class="email-type selected" onclick="richText(this.id);">HTML</div>
+                <input type="hidden" value="1" name="email_text_type" id="email_text_type" />
+        </div>
+        @endif
+        @if(isset($emailTemplate))
+        <div id="email-template-text" class="text_input_container" style="<?php echo (($emailTemplate->email_text_type==2)?'display:none;':'display:block;');?>">
+            <div class="error_overlay" @if(($errors->first('body'))){{'style="display: block;"'}}@endif id="email-template-body-error">Email body required</div>
+            {{ Form::textarea('body', Input::old('body'), ['placeholder' => 'Email body', 'email-template-body' => 'body', 'class' => 'mceEditor','rows'=>'4', 'cols'=>'50']) }}
+        </div>
+        @else
+        <div id="email-template-text" class="text_input_container" style="display:none;">
+            <div class="error_overlay" @if(($errors->first('body'))){{'style="display: block;"'}}@endif id="email-template-body-error">Email body required</div>
+            {{ Form::textarea('body', Input::old('body-rich'), ['placeholder' => 'Email body', 'email-template-body' => 'body', 'class' => 'mceEditor','rows'=>'4', 'cols'=>'50']) }}
+        </div>        
+        @endif
+        @if(isset($emailTemplate))
+        <div id="email-template-text-rich" class="text_input_container" style="<?php echo (($emailTemplate->email_text_type==1)?'display:none;':'display:block;');?>">
+            <div class="error_overlay" @if(($errors->first('body'))){{'style="display: block;"'}}@endif id="email-template-body-error">Email body required</div>
+            {{ Form::textarea('body-html', $emailTemplate->body, ['placeholder' => 'Rich Text', 'email-template-body' => 'body-html']) }}
+        </div>
+        @else
+        <div id="email-template-text-rich" class="text_input_container" style="display:block;">
+            <div class="error_overlay" @if(($errors->first('body'))){{'style="display: block;"'}}@endif id="email-template-body-error">Email body required</div>
+            {{ Form::textarea('body-rich', Input::old('body-rich'), ['email-template-body' => 'body-html', 'id' =>'code_textarea']) }}
+        </div>        
+        @endif
+        
+        
+          <div class="clear"></div>              
+            
+        </div>
+        @if( Input::has('returnTo') )
+                {{Form::hidden('returnTo', Input::get('returnTo'))}}
+        @endif
+        
+        <div class="button-holder">
+        						<div class="red_button campaing-back-step-btn" onclick="window.location='{{route('new-campaign.email')}}'">Back</div>
+                                <div class="red_button campaing-next-step-btn" onclick="document.getElementById('new_email_form').submit();">Next</div>
+                            </div>
+        
+    </div>
+{{ Form::close() }}
+@stop
+<script type="text/javascript">
+        
+        function richText(id)
+        {
+                if (id=='left_email_tab')
+                {
+                
+                //alert(id);
+                        //$("#right_email_tab").removeClass("email-type unselected").addClass("email-type selected");
+                        //$("#left_email_tab").removeClass("email-type selected").addClass("email-type unselected");
+                        document.getElementById("left_email_tab").setAttribute("class", "email-type selected");
+                        document.getElementById("right_email_tab").setAttribute("class", "email-type unselected");
+                        document.getElementById("email_text_type").value = 2;
+                        document.getElementById("email-template-text-rich").value = "";
+                        document.getElementById("email-template-text-rich").style.display = "none";
+                        document.getElementById("email-template-text").style.display = "block";
+                }
+
+                if (id=='right_email_tab')
+                {
+				
+				//alert(id);
+				        //$("#left_email_tab").removeClass("email-type unselected").addClass("email-type selected");
+				        //$("#right_email_tab").removeClass("email-type selected").addClass("email-type unselected");
+				        document.getElementById("right_email_tab").setAttribute("class", "email-type selected");
+				        document.getElementById("left_email_tab").setAttribute("class", "email-type unselected");
+				        document.getElementById("email_text_type").value = 1;
+				        document.getElementById("email-template-text").value = "";
+				        document.getElementById("email-template-text").style.display = "none";
+				        document.getElementById("email-template-text-rich").style.display = "block";
+				
+                }
+        }
+
+</script>

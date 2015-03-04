@@ -1,0 +1,243 @@
+<?php 
+
+//use GradList\Campaigns\CampaignList;
+
+class CampaignController extends BaseController {
+
+/*
+|--------------------------------------------------------------------------
+| Default Home Controller
+|--------------------------------------------------------------------------
+|
+| You may wish to use controllers instead of, or in addition to, Closure
+| based routes. That's great! Here is an example controller method to
+| get you started. To route to this controller, just add the route:
+|
+| Route::get('/', 'HomeController@showWelcome');
+|
+*/
+    public function __construct()
+    {
+        $this->beforeFilter('auth');
+        if( isset(Sentry::getUser()->id) )
+            $this->_user = User::find(Sentry::getUser()->id);
+    }
+    private $_user;
+    protected $campaignSteps = ['opportunity', 'candidates', 'content', 'preview', 'send'];
+    protected $campaignRoutes = ['new-campaign.opportunity', 'new-campaign.candidates', 'new-campaign.email', 'new-campaign.preview', 'new-campaign.sent'];
+    protected $campaignStepValues = [
+        'opportunity'   => 'opportunity',
+        'candidates'    => 'candidates-pool',
+        'content'       => 'email-template',
+        'preview'       => '',
+        'send'          => '',
+    ];
+    protected $campaignStepCreateRoutes = ['opportunity.create', 'search', 'email-template.create'];
+
+
+    public function index()
+    {
+        $campaigns = Campaign::all();
+        return View::make('campaign.index', ['campaigns' => $campaigns, 'currentPage' => 'campaign']);
+    }
+
+    public function show($id)
+    {
+        $campaign = Campaign::find($id);       
+//        $campaignStats = $campaign->mailchimp->getCampaignStats($campaign->mailchimp->campaign_identifier);
+        return View::make('campaign.show', ['campaign' => $campaign, 'currentPage' => 'campaign']);
+    }   
+
+    public function opportunity()
+    {
+        $opportunities = Opportunity::with('workType')->with('locations')->with('workSector')->get();
+        //print_r($opportunities->workType->name);die();
+        $data = [
+            'opportunities' => $opportunities,
+        ];
+        return View::make('campaign.opportunity.index', $data);
+    }
+    
+    public function email()
+    {
+        $emailTemplates = EmailTemplate::all();
+        $data = [
+            'emailTemplates' => $emailTemplates,
+        ];
+        return View::make('campaign.email-templates.index', $data);
+    }
+    
+    public function candidates()
+    {
+        $candidatesPools = CandidatesPool::all();
+        $data = [
+            'candidatesPools' => $candidatesPools,
+        ];
+        return View::make('campaign.candidates-pools.index', $data);
+        //return View::Make('candidates-pool.index', $data);
+    }
+    
+    public function preview()
+    {
+        $data = [
+            'opportunity'       => Opportunity::find(Session::get('opportunity', 0)),
+            'candidatesPool'    => CandidatesPool::find(Session::get('candidates-pool', 0)),
+            'emailTemplate'     => EmailTemplate::find(Session::get('email-template', 0)),
+        ];
+        //echo $data['opportunity']->id;die();
+        //print_r($data);die();
+        return View::make('campaign.preview', $data);
+    }
+    
+    public function create()
+    {
+        $opportunities = Opportunity::lists('name', 'id');
+        $candidatesPools = CandidatesPool::lists('name','id');
+        return View::make('campaign.create', ['currentPage' => 'campaign', 'opportunities' => $opportunities, 'candidatesPools' => $candidatesPools]);
+    }
+
+    public function store()
+    {
+        $campaign                       = new Campaign(Input::all());
+        $campaign->name                 = Input::get('campaign-name');
+        $campaign->opportunity_id       = Input::get('opportunity');
+        $campaign->candidates_pool_id   = Input::get('candidates_pool');
+        $campaign->email_template_id    = Input::get('email_template');
+        $campaign->save();
+        
+        $mailchimp = new Mailchimp();
+        $candidatesPool = CandidatesPool::find($campaign->candidates_pool_id);
+        $emailTemplate = EmailTemplate::find($campaign->email_template_id);
+        $user_emails = $candidatesPool->users()->get(['email']);
+
+        $listId = MailchimpCampaign::$list;
+        $userId = $this->_user->id;
+        $campaignId = $campaign->id;
+        $segmentName = 'u'.$userId.'c'.$campaignId;
+
+        $createSegmentResult        = $mailchimp->lists->staticSegmentAdd($listId, $segmentName);
+        $addEmailsToSegmentResult   = $mailchimp->lists->staticSegmentMembersAdd($listId, $createSegmentResult['id'], $user_emails);
+        $campaignCreateResult       = $this->createCampaign($listId, $createSegmentResult['id'], $emailTemplate->subject, $emailTemplate->body);
+        
+        $mailChimpData = new MailchimpCampaign(['campaign_identifier' => $campaignCreateResult['id'], 'list_identifier' => $listId, 'segment_identifier' => $createSegmentResult['id']]);
+        if( ( isset($createSegmentResult['status']) && $createSegmentResult['status'] == 'error' )
+                || ( isset($addEmailsToSegmentResult['status']) && $addEmailsToSegmentResult['status'] == 'error' )
+                || ( isset($campaignCreateResult['status']) && $campaignCreateResult['status'] == 'error' )){
+            return Redirect::back()->with('error', 'An error occurred, please try again later');
+        }
+        $campaign->mailchimp()->save($mailChimpData);
+        
+        Session::forget('campaign-name');
+        Session::forget('opportunity');
+        Session::forget('candidates_pool');
+        Session::forget('email_template');
+        
+        return Redirect::to(route('new-campaign.sent'));
+    }
+    
+    public function saveStep()
+    {
+        $currentStep = Input::get('step', $this->campaignSteps[0]);
+        $currentStepValue = Input::get($this->campaignStepValues[$currentStep], 0);
+        //echo $currentStepValue."<br/>";
+        if($currentStepValue == 0 && isset($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)]) )
+        {
+            //echo $this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)];die();
+            return Redirect::to(route($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)],
+                ['returnTo' => $this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]]))->with('campaign', 1 );
+        }
+        Session::set($this->campaignStepValues[$currentStep], $currentStepValue);
+        
+        return Redirect::to(route($this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]));
+    }
+    
+    public function saveStepTypes()
+    {
+        $currentStep = Input::get('step', $this->campaignSteps[0]);
+        $currentStepValue = Input::get($this->campaignStepValues[$currentStep], 0);
+        $routingType = Input::get('form_type_opportunity');
+        if($routingType == 1 || $routingType == 2 || $routingType == 3)
+        {
+            $routingType = $routingType;
+        }
+        else
+        {
+            $routingType = 1;
+        }
+        if($currentStepValue == 0 && isset($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)]) )
+        {
+            ////echo $this->campaignStepCreateRoutes[array_search($currentStep,$this->campaignSteps)];print_r($currentStep); print_r($this->campaignSteps); 
+            ////echo "<br/>".$this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]; die();
+            //Session::set('frmopportunitytype', $routingType);
+            if($routingType==2)
+            {
+                return Redirect::to(route('opportunity.upcomingevent',
+                ['returnTo' => 'new-campaign.candidates']))->with('campaign', 1 )->with('frmopportunitytype', $routingType);
+                //echo "hi";die();
+            }
+            if($routingType==3)
+            {
+                return Redirect::to(route('opportunity.generalintro',
+                ['returnTo' => 'new-campaign.candidates']))->with('campaign', 1 )->with('frmopportunitytype', $routingType);
+                //echo "hello";die();
+            }
+            else
+            {
+                
+                return Redirect::to(route($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)],
+                ['returnTo' => $this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]]))->with('campaign', 1 )->with('frmopportunitytype', $routingType);
+            }
+        }
+    }
+    
+    private function createCampaign($listId, $segmentId, $subject, $body)
+    {
+        $mailchimp = new Mailchimp();
+        $trackingOptions =  [ 'opens' => true,  'html_clicks' => true ];
+        
+        $options = [
+            'list_id'       => $listId, 
+            'subject'       => $subject,
+            'from_email'    => 'no-reply@gradlist.co.uk', 
+            'from_name'     => 'GradList',
+            'tracking'      => $trackingOptions,
+        ];
+        $segment_opts = ['saved_segment_id'=> $segmentId, 'match' => 'all'];
+        
+        $content = ['html' => $body];
+
+        return $mailchimp->campaigns->create('regular', $options, $content, $segment_opts);
+    }
+    
+    private function sendCampaign($cid)
+    {
+        $t = new Mailchimp();
+        return $t->campaigns->send($cid);
+    }
+    
+    //Andrew
+    public function new_opportunity()
+    {
+        return View::make('new_opportunity');
+    }
+    
+    public function new_campaign()
+    {
+        $candidatesPools = CandidatesPool::all();
+        $emailTemplates = EmailTemplate::all();
+        $opportunities = Opportunity::all();
+        $data = [
+            'candidatesPools'   => $candidatesPools, 
+            'emailTemplates'    => $emailTemplates,
+            'opportunities'     => $opportunities,
+            'workTypes'         => WorkType::all(), 
+            'workOptions'       => Option::where('category_id', '=', 1)->get(),
+            ];
+        return View::make('campaign.new-campaign', $data);
+    }
+
+    public function new_campaign_search()
+    {
+        return View::make('search');
+    }
+}

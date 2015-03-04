@@ -1,0 +1,156 @@
+#log_in_box {
+	border-top: 10px solid #2ecc71;
+	background-color: #fff;
+	padding-top: 15px;
+	padding-left: 15px;
+        padding-bottom: 1px;
+	width: 430px;
+	margin-top: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	/*height: 180px;*/
+	-webkit-animation-duration: 1s;
+}
+
+#recover_password_box {
+	border-top: 10px solid #2ecc71;
+	background-color: #fff;
+	padding-top: 15px;
+	padding-left: 15px;
+	width: 430px;
+	margin-top: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	height: 120px;
+	-webkit-animation-duration: 1s;
+}
+
+#reset_password_box {
+	border-top: 10px solid #2ecc71;
+	background-color: #fff;
+	padding-top: 15px;
+	padding-left: 15px;
+	width: 430px;
+	margin-top: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	height: 180px;
+	-webkit-animation-duration: 1s;
+}
+
+input[type="submit"] {
+	width: 395px;
+	height: 40px;
+	background-color: #3498db;
+	border: 1px solid #3498db;
+	color: #fff;
+	font-family: "Lato", Helevetica, sans-serif;
+	font-size: 17px;
+	margin-bottom: 20px;
+	box-shadow: 0 4px #2980b9;
+	-moz-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-weight: bold;
+}
+
+#log_in_header, #recover_password_header {
+	font-size: 40px;
+		margin-top: 10px;
+		font-weight: normal;
+		color: #7991a5;
+		width: 430px;
+		margin-left: auto;
+		margin-right: auto;
+		margin-bottom: 10px;
+		text-align: center;
+}
+
+form {
+	min-height: 560px;
+}
+
+label {
+	color: #4b5863;
+}
+
+
+#recover_password_btn, #reset_password_btn {
+	width: 410px;
+	height: 30px;
+	background-color: #ef7f65;
+	border: 1px solid #ef7f65;
+	color: #fff;
+	font-family: "Lato", Helevetica, sans-serif;
+	font-size: 17px;
+	margin-bottom: 5px;
+	box-shadow: 0 4px #e94d29;
+	-moz-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-weight: bold;
+	float: left;
+	cursor: pointer;
+	text-align: center;
+	padding-top: 10px;
+}
+
+
+#forgotten_password_box {
+	width: 430px;
+	margin-top: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+#forgotten_password_box span {
+	border-bottom: 1px dotted #5e91bd;
+	color: #5e91bd;
+	cursor: pointer;
+}
+
+#forgotten_password_box a:hover {
+	border-bottom: 1px dotted #305879;
+	color: #305879;
+	text-decoration: none;
+}
+
+#gl_log_in {
+	padding-top: 80px;
+}
+
+#gl_recover_password {
+	padding-top: 80px;
+}
+
+#change_password_success, #password_reset_email_sent {
+	width: 100%;
+	text-align: center;
+	height: 37px;
+	background-color: #9b59b6;
+	font-weight: bold;
+	color: #fff;
+	padding-top: 10px;
+	font-size: 18px;
+	-webkit-border-radius: 4px;
+	display: none;
+}
+
+#log_in_box .error_overlay {
+    height: 35px;
+    width: 395px;
+}
+
+.error_message {
+	border: 1px solid #e74c3c;
+	width: 395px;
+	padding: 6px 10px;
+	margin-bottom: 10px;
+	color: #591C16;
+	background-color: #FFD9D5;
+}

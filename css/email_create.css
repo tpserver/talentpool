@@ -1,0 +1,88 @@
+#new_email_box {
+                background-color: #fff;
+                padding-top: 40px;
+                padding-left: 15px;
+                width: 860px;
+                margin-top: 15px;
+                clear: both;
+                background-image:url("../img/compose_mail_bg.png") ;
+                background-repeat: no-repeat;
+                width: 827px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #email-template-name, #email-template-subject, #email-template-name-error, #email-template-subject-error {
+                width: 795px;
+            }
+
+            #email-template-text, #email-template-text-rich, #email-template-body-error {
+                width: 1099px;
+                margin-bottom: 15px;
+                margin-top: 15px;
+            }
+            
+            .CodeMirror {
+            	border: 1px solid #d2d2d2;
+            }
+            
+            #email-template-body-error {
+                height: 233px;
+            }
+            
+            #email_button_holder {
+                padding-left: 15px;
+                padding-right: 15px;
+                width: 860px;
+                margin-top: 15px;
+                clear: both;
+                background-repeat: no-repeat;
+                width: 790px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #new-email-template-cancel-btn {
+                float: right;
+            }
+
+            button {
+                font-family: "Lato", Arial,Helvetica,sans-serif;
+            }
+
+#email_tab_container {
+	width: 340px;
+	margin-left: auto;
+	margin-right: auto;
+	clear: both;
+	margin-bottom: 15px;
+}
+
+#left_email_tab {
+	border-radius: 15px 0px 0px 15px;
+	width: 170px;
+	padding: 10px 15px;
+	text-align: center;
+	border-right: 0px;
+	float: left;
+	cursor: pointer;
+}
+
+#right_email_tab {
+	border-radius: 0px 15px 15px 0px;
+	width: 170px;
+	padding: 10px 15px;
+	text-align: center;
+	float: left;
+	cursor: pointer;
+}
+
+.unselected {
+	border: 1px solid #d2d2d2;
+}
+
+.selected {
+	background-color: #3498db;
+	border: 1px solid #2980b9;
+	color: #fff;
+}

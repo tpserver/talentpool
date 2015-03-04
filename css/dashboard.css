@@ -1,0 +1,114 @@
+#basic_form {
+	padding-top: 80px;
+}
+
+#update_success, #password_changed_success {
+width: 100%;
+text-align: center;
+height: 37px;
+background-color: #9b59b6;
+font-weight: bold;
+color: #fff;
+padding-top: 10px;
+font-size: 18px;
+-webkit-border-radius: 4px;
+}
+
+#update_success_container, #password_changed_success_container {
+	padding-top: 20px;
+	display: none;
+}
+
+#degree_subject_type {
+	width: 290px;
+}
+
+#degree_subject_name {
+	width: 320px;
+}
+
+#change_password_modal {
+width: 435px;
+height: 285px;
+position: fixed;
+left: 50%;
+top: 50%; 
+margin-left: -217.5px;
+margin-top: -150px;
+background-color: #fff;	
+z-index: 5000;
+border-top: 10px solid #2ecc71;
+background-color: #fff;
+padding-top: 15px;
+padding-left: 15px;
+display: none;
+}
+
+#change_password {
+	cursor: pointer;
+}
+
+#change_password_modal .box_header {
+	width: 500px;
+}
+
+#change_password_modal input[type="password"] {
+	width: 400px;
+}
+
+#old_password_error, #new_password_error, #new_password_repeat_error {
+	width: 398px;
+	cursor: pointer;
+}
+
+#modal_background {
+ /* ensures it’s invisible until it’s called */
+    position: fixed;  /* makes the div go into a position that’s absolute to the browser viewing area */
+    left: 0%; /* makes the div span all the way across the viewing area */
+    top: 0%; /* makes the div span all the way across the viewing area */
+    background-color: #34495e;
+    -moz-opacity: 0.7; /* makes the div transparent, so you have a cool overlay effect */
+    opacity: .70;
+    filter: alpha(opacity=70);
+    width: 100%;
+    height: 100%;
+    z-index: 4995; /* makes the div the second most top layer, so it’ll lay on top of everything else EXCEPT for divs with a higher z-index (meaning the #overlay ruleset) */
+    display: none;
+}
+
+#save_changes_btn {
+	background-color: #69c773;
+	-webkit-border-radius: 7px;
+	padding: 10px 50px 10px 50px;
+	float: right;
+	color: #fff;
+	margin-left: 20px;
+	cursor: pointer;
+	box-shadow: 0 4px #42ae4e;
+	-moz-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-weight: bold;
+	margin-top: 17px;
+	margin-right: 20px;
+	cursor: pointer;
+}
+
+#reset_password_btn {
+	-webkit-border-radius: 7px;
+	padding: 10px 0px 10px 0px;
+	width: 418px;
+	float: left;
+	color: #fff;
+	cursor: pointer;
+	box-shadow: 0 4px #e3401a;
+	-moz-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-weight: bold;
+	text-align: center;
+}

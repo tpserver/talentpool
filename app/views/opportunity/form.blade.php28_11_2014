@@ -1,0 +1,62 @@
+ {{ Form::open(['url' => route('opportunity.store'), 'id' => 'new_opportunity_form'])}}
+    <div class="opportunity_basic_info" id="blue_box">
+        <div class="text_input_container">
+            {{$errors->first('name', '<div class="error_overlay opportunity-name-error" id="first_name_error">:message</div>')}}
+            {{Form::text('name', '', ['id' => 'opportunity_name_input', 'placeholder' => 'Opportunity Name'])}}
+        </div>
+        <div class="text_input_container" style="margin-right: 0">
+            {{$errors->first('work-type', '<div class="error_overlay opportunity-work-error">:message</div>')}}
+            @include('inputs.work_type_dropdown')
+        </div>
+        <div class="text_input_container">
+            {{Form::text('salary', '', ['id' => 'salary_input', 'placeholder' => 'Annual Salary'])}}
+        </div>
+        <div class="text_input_container">
+            <div class="error_overlay" id="event_date_error">Opportunity Start Date</div>
+            {{$errors->first('opportunity_start_date', '<div class="error_overlay opportunity-name-error" id="opportunity_start_date_error">:message</div>')}}
+            {{Form::text('opportunity_start_date', '', ['id' => 'opportunity_start_date', 'placeholder' => 'Opportunity Start Date'])}}
+        </div>
+        <div class="text_input_container" style="margin-right: 0">
+            <div class="error_overlay" id="event_date_error">Expected Hire Date</div>
+            {{$errors->first('expected_hire_date', '<div class="error_overlay opportunity-name-error" id="expected_hire_date_error">:message</div>')}}
+            {{Form::text('expected_hire_date', '', ['id' => 'expected_hire_date', 'placeholder' => 'Expected Hire Date'])}}
+        </div>
+        <div class="text_input_container">
+            <div class="error_overlay" id="event_date_error">Employer Name</div>
+            {{$errors->first('employer_name', '<div class="error_overlay opportunity-name-error" id="employer_name_error">:message</div>')}}
+            {{Form::text('employer_name', Sentry::getUser()->first_name." ".Sentry::getUser()->last_name, ['id' => 'employer_name', 'placeholder' => 'Employer Name'])}}
+        </div>
+        <div class="text_input_container" style="margin-right: 0">
+            <div class="error_overlay" id="event_date_error">Employer Sector</div>
+            {{$errors->first('employer_sector', '<div class="error_overlay opportunity-name-error" id="employer_sector_error">:message</div>')}}
+            {{Form::text('employer_sector', '', ['id' => 'employer_sector', 'placeholder' => 'Employer Sector'])}}
+        </div>
+        <div class="text_input_container" style="margin-right: 0">
+            <div class="error_overlay" id="event_date_error">What to do next to progress the opportunity</div>
+            {{$errors->first('what_to_do', '<div class="error_overlay opportunity-name-error" id="what_to_do_error">:message</div>')}}
+            {{Form::text('what_to_do', '', ['id' => 'what_to_do', 'placeholder' => 'Opportunity Progress'])}}
+        </div>
+        <div id="spacer"></div>
+    </div>
+    <div id="blue_box">
+        <div class="box_header">Location</div>
+        @foreach($locations as $location)
+        <label class="location_checkbox">{{Form::checkbox('opportunity_location[]', $location->id)}}{{$location->name}}</label>
+        @endforeach
+        
+        <div id="spacer"></div>
+    </div>
+    <div id="form_div_header">Sector</div>
+    <div id="sector_box">
+        @include('signup.inputs.work')
+    </div>
+    <div class='clear'></div>
+    <div id="button_holder">
+                        
+                    
+    @if(Input::has('returnTo'))
+        {{Form::hidden('returnTo', Input::get('returnTo'))}}
+    @endif
+    {{ Form::submit('Save', ['class' => 'red_button', 'id' => 'next_button_other']) }}
+    </div>
+{{ Form::close() }}

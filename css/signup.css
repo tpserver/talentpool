@@ -1,0 +1,325 @@
+#job_type_box {
+    background-color: #fff;
+    padding-left: 15px;
+    width: 855px;
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.checkbox_container_option {
+    height: 60px;
+    width: 261px;
+    float: left;
+    margin-right: 20px;
+    background-color: #fff;
+    color: #000;
+    margin-top: 5px;
+    moz-border-radius: 3px;
+    -o-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    font-size: 17px;
+    border: 2px solid #CACACA;
+    cursor: pointer;
+    padding-right: 20px;
+    display: table;
+    margin-bottom: 15px;
+}
+
+
+#job_type_box .checkbox_container_option {
+    width: 243px;
+}
+
+.checkbox_container_option input {
+    display: none;
+}
+
+.checkbox_container_option p {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.checkbox_option {
+    height: 20px;
+    width: 20px;
+    background-image:url('../img/checkbox.png');
+    background-position: -20px;
+    background-repeat: no-repeat;
+    background-color:#fff;
+    float: left;
+    margin-right: 15px;
+    margin-top: 18px;
+    margin-left: 20px;
+    border: 2px solid #CACACA;
+}
+
+.checkbox_checked {
+    background-position: 0px;
+    border: none;
+}
+
+.checkbox_container_selected {
+    color: #fff;
+}
+
+#job_type_container .checkbox_container_selected {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+#job_location_container .checkbox_container_selected {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+
+#attributes_container .checkbox_container_selected {
+    background-color: #9b59b6;
+    border-color: #9b59b6;
+}
+
+
+#capabilities_container .checkbox_container_selected {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+#key_experience_container .checkbox_container_selected {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+#attributes_container {
+    border-top: 10px solid #9b59b6;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-left: 15px;
+    width: 860px;
+    float: left;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    clear: both;
+
+}
+
+#capabilities_container {
+    border-top: 10px solid #2ecc71;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-left: 15px;
+    width: 860px;
+    float: left;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    clear: both;
+
+}
+
+#key_experience_container {
+    border-top: 10px solid #3498db;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-left: 15px;
+    width: 860px;
+    float: left;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    clear: both;
+
+}
+
+#key_skills_container {
+    border-top: 10px solid #3498db;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-left: 15px;
+    width: 860px;
+    float: left;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    clear: both;
+
+}
+
+.key_skill {
+    width: 400px;
+    height: 61px;
+    float: left;
+    margin-bottom: 15px;
+    moz-border-radius: 3px;
+    -o-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #d2d2d2;
+    margin-right: 20px;
+}
+
+.agnostic_box_labels, .availability_option {
+    float: left;
+    margin-right: 20px;
+    font-size: 17px;
+    margin-top: 5px;
+}
+
+.agnostic_box_labels input[type="radio"], .availability_option input[type="radio"], .availability_option input[type="checkbox"] {
+    margin-right: 10px;
+    margin-top: -6px;
+}
+
+
+.slider {
+    width: 390px;
+    height: 12px;
+    background-color: #ebedef;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+.slider_circle {
+    float: left;
+    height: 15px;
+    width: 15px;
+    border-radius: 6px;
+    background-color: #3498db;
+}
+
+#availability_other_details {
+    float: left;
+    margin-top: -7px;
+}
+
+.key_skill_level {
+    float: left;
+}
+
+.key_skill select {
+    height: 35px;
+    margin-top: 13px;
+    width: 173px;
+    border: 1px solid #1c557b;
+}
+
+#key_skills_container .checkbox_container_option {
+    width: 180px;
+    border: none;
+    height: 55px;
+    background-color: transparent;
+}
+
+#key_skills_container .checkbox_option {
+    margin-top: 13px;
+}
+
+#key_skills_container .checkbox_container_option p {
+    display: block;
+    margin-top: 13px;
+}
+
+.skill_selected {
+    background-color: #3498db;
+    border: 1px solid #1c557b;
+}
+
+#key_skills_container .checkbox_option .checkbox_checked {
+    border: 1px solid #1c557b;
+}
+
+.skill_divider {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #b2b2b2;
+    padding-bottom: 10px;
+    width: 840px;
+    float: left;
+    clear: both;
+    cursor: pointer;
+}
+
+.sub_skill_container {
+    float: left;
+}
+#basic-edit-form {
+    padding-top: 100px;
+}
+#basic-edit-form, #education-edit-form, #experience-edit-form, #other-edit-form {
+    margin: auto;
+    width: 875px;
+}
+
+
+#profile-update-btn {
+    border: 0;
+}
+
+.login-header-btn {
+   
+    border-radius: 3px;
+    border: 2px solid #fff;
+    cursor: pointer;
+    float: right;
+    font-weight: bold;
+    margin-top: 17px;
+    margin-right: 17px;
+    padding: 10px 30px;
+    color: #fff;
+}
+
+.login-header-btn:hover {
+	background-color: #16a085;
+	color: #fff;
+}
+
+.sector_sub_box, .search-filterbox-50 {
+    width: 425px;
+}
+
+#activate_box {
+    border-top: 10px solid #2ecc71;
+    background-color: #fff;
+    padding-top: 15px;
+    padding-left: 15px;
+    width: 860px;
+    float: left;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    clear: both;
+}
+
+.box_header {
+    width: 790px;
+    font-size: 20px;
+    margin-bottom: 15px;
+    float: left;
+}
+
+.box_header_with_subtitle {
+	width: 790px;
+	font-size: 20px;
+	float: left;
+	margin-bottom: 3px;
+}
+
+.box_header_subtitle {
+	clear: both;
+	font-size: 17px;
+	color: #6A8091;
+	margin-bottom: 10px;
+}
+
+#edit_profile_header {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	color: #9aa8b5;
+	font-size: 40px;
+	letter-spacing: -0.5px;
+	text-align: left;
+	font-weight: normal;
+}
+
+#emails_per_week {
+	width: 440px;
+}

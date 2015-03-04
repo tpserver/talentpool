@@ -1,0 +1,1044 @@
+#db_search_container {
+    padding-top: 80px;
+}
+
+#db_search_align_container {
+    width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+}
+
+#search-form-filter {
+    position: relative;
+    padding-bottom: 60px;
+}
+
+/*#search-form-filter {*/
+.search-filter-container {
+    border: 1px solid #2ecc71;
+    border-top: 10px solid #2ecc71;
+    background: #fff;
+    padding: 10px;
+    margin-bottom: 20px;
+    min-height: 60px;
+    position: relative;
+    float: left;
+    width: 100%;
+    margin-top: 5px;
+}
+
+#new-candidate-pool-form {
+    border: 1px solid #d2d2d2;
+    background: #fff;
+    height: 70px;
+    padding: 10px;
+}
+
+.remove-filter-container-btn {
+    display: block;
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 30px;
+    border: 2px solid #d2d2d2;
+    font-size: 20px;
+    text-align: center;
+    color: #949494;
+}
+
+.remove-filter-container-btn:hover {
+    background-position: 0 0;
+}
+
+#categories_box {
+   padding: 20px;
+   padding-left: 0px;
+   width: 830px;
+   height: 150px;
+   margin-top: 0px;
+   clear: both;
+   padding-right: 0px;
+   margin-left: auto;
+   margin-right: auto;
+   padding-top: 0px;
+}
+
+#other_option {
+	margin-right: 0px;
+}
+
+
+#total {
+    text-align: left;
+    font-size: 40px;
+    color: #34495e;
+    font-weight: lighter;
+    padding-top: 10px;
+    float: left;
+
+}
+
+#total_label {
+    text-align: left;
+    font-size: 15px;
+    color: #8a9eb3;
+    width: 50px;
+    float: right;
+    width: 100px;
+    padding-top: 17px;
+    margin-left: 10px;
+}
+
+.option_icon_box {
+    width: 150px;
+    height: 150px;
+    border: 1px solid #d2d2d2;
+    float: left;
+    margin-right: 20px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.option_icon_top_border {
+    height: 10px;
+    width: 150px;
+    margin-left: -1px;
+    margin-top: -1px;
+
+}
+
+#border_1 {
+	background-color: #f39c12;
+}
+
+#border_2 {
+    background-color: #2ecc71;
+}
+
+#border_3 {
+    background-color: #9b59b6;
+}
+
+#border_4 {
+    background-color: #3498db;
+}
+
+#border_5 {
+    background-color: #e74c3c;
+}
+
+.option_icon {
+    width: 80px;
+    height: 70px;
+    margin-left: 33px;
+    margin-top: 5px;
+}
+
+.option_text {
+    text-align: center;
+    width: 120px;
+    font-size: 18px;
+    color: #343434;
+    line-height: 115%;
+    margin-top: 7px;
+    margin-left: 13px;
+}
+
+/*#option_2.option_icon_box, #option_3.option_icon_box, #option_4.option_icon_box {
+        opacity: 0.5;
+}*/
+
+#categories_box .option_icon {
+    background-image:url('../img/db_search_icons2.png');
+    background-repeat: no-repeat;
+}
+
+#icon_1 {
+    background-position: 0 -280px;
+}
+
+#icon_2 {
+    background-position: 0 -210px; 
+}
+
+#icon_3 {
+    background-position: 0 -70px;
+}
+
+#icon_4 {
+    background-position: 0 -140px;
+}
+
+#icon_5 {
+    background-position: 0 0;
+}
+
+.sub_option_filter {
+    width: 821px;
+    margin: 0px auto 20px auto;
+    display: none;
+    clear: both;
+}
+
+.sub_sub_option {
+	background-color: #fff;
+	width: 821px;
+	padding: 15px 20px 0px 20px;
+	margin-bottom: 25px;
+	clear: both;
+}
+
+.segment {
+	border-top: 10px solid #f39c12;
+}
+
+.university, .language, .skills {
+	border-top: 10px solid #9b59b6;
+}
+
+.work_experience {
+	border-top: 10px solid #2ECC71;
+}
+
+.other_details {
+	border-top: 10px solid #e74c3c;
+}
+
+.sub_option_container {
+width: 821px;
+padding: 15px 20px 15px 20px;
+margin: 20px auto 20px auto;
+display: none;
+clear: both;
+}
+
+#sub_option_work_filter_sector {
+    display: none;
+}
+
+#sub_option_other_filter {
+    border-top: 10px solid #e74c3c;
+}
+
+#sub_option_sport_filter_sport, #sub_option_sport_filter_society {
+    border-top: 10px solid #3498db;
+}
+
+.sub_option_container  {
+    display: none;
+    margin-left: auto;
+    margin-right: auto;
+    height: 60px;
+    float: left;
+    margin-top: 5px;
+    margin-bottom: 30px;
+}
+
+#sub_option_container_sport {
+    width: 690px;
+    margin-left: 225px;
+}
+
+#sub_option_container_academic {
+    width: 1090px;
+    margin-left: 10px;
+}
+#sub_option_container_work {
+    width: 1090px;
+    margin-left: 10px;
+}
+#sub_option_container_segment {
+	width: 690px;
+	margin-left: 10px;
+}
+#sub_option_general
+{
+    margin-left: 135px;
+}
+
+.sub_option {
+    width: 189px;
+    padding: 15px;
+    color: #fff;
+    font-size: 18px;
+    float: left;
+    margin-left: 20px;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0.5
+}
+
+#sub_option_container_segment .sub_option {
+    background-color: #c0392b;
+}
+
+#sub_option_container_work .sub_option {
+    background-color: #2ecc71;
+}
+
+#sub_option_container_academic .sub_option {
+    background-color: #9b59b6;
+}
+
+#sub_option_container_sport .sub_option {
+    background-color: #3498db;
+}
+
+#sub_option_container_other .sub_option {
+    background-color: #f57a7a;
+}
+
+.selected {
+    opacity: 1;
+}
+
+label {
+    float: left;
+    margin-left: 20px;
+    font-size: 17px;
+    margin-top: 10px;
+}
+
+input[type="checkbox"] {
+    margin-right: 10px;
+    margin-top: -2px;
+}
+
+#create-campaign-button {
+    float: right;
+    width: 200px;
+    height: 45px;
+    font-size: 18px;
+    font-weight: normal;
+    color: #606060;
+    text-align: center;
+    padding-top: 11px;
+    padding-bottom: 11px;
+    padding: 11px 20px;
+    cursor: pointer;
+    box-shadow: 0 4px #bdc3c7;
+    -moz-border-radius: 3px;
+    -o-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    font-family: "Source Sans Pro", Helvetica;
+    font-size: 17px;
+    border: 0px solid #bdc3c7;
+    margin-right: 15px;
+    margin-top: 15px;
+    background-color: #ecf0f1;
+}
+
+.add_to_filter_btn {
+	-webkit-border-radius: 7px;
+	padding: 10px 30px 10px 30px;
+	float: right;
+	cursor: pointer;
+	-moz-border-radius: 0px 0px 3px 0px;
+	-o-border-radius: 0px 0px 3px 0px;
+	-moz-border-radius: 0px 0px 3px 0px;
+	-webkit-border-radius: 0px 0px 3px 0px;
+	border-radius: 0px 0px 3px 0px;
+	font-weight: bold;
+	background-color: #9B59B6;
+	color: #fff;
+	margin-bottom: 0px;
+	
+}
+
+.academic_btn {
+	box-shadow: 0 4px #8E44AD;
+	background-color: #9B59B6;
+}
+
+.sports_and_societies_btn {
+	box-shadow: 0 4px #2980B9;
+	background-color: #3498DB;
+}
+
+.work_experience_btn {
+	box-shadow: 0 4px #27AE60;
+	background-color: #2ECC71;
+}
+
+.segment_btn {
+	box-shadow: 0 4px #e67e22;
+	background-color: #f39c12;
+}
+
+.other_details_btn {
+    background-color: #f57a7a;
+    box-shadow: 0 4px #e74c3c;
+}
+
+.other_sector_preference_btn {
+    background-color: #f57a7a;
+    box-shadow: 0 4px #e74c3c;
+}
+
+#current-filter {
+    background-color: #fff;
+    border: 1px solid #d2d2d2;
+    padding: 0 0 20px 0;
+    min-height: 40px;
+}
+
+.filter-element {
+    position: relative;
+    padding: 5px 39px 5px 15px;
+    margin-left: 10px;
+    margin-top: 0px;
+    float: left;
+    cursor: pointer;
+    /*box-shadow: 0 4px #d7d7d7;*/
+    -moz-border-radius: 3px;
+    -o-border-radius: 3px;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    font-weight: normal;
+    background-color: #2ecc71;
+    color: #fff;
+}
+
+.remove-from-filter {
+    display: block;
+    position: absolute;
+    right: 6px;
+    top: 5px;
+    width: 22px;
+    height: 22px;
+    border-radius: 15px;
+    border: 2px solid #fff;
+    font-size: 13px;
+    text-align: center;
+    color: #fff;
+    background-image: none;
+}
+
+.remove-from-filter:hover {
+    background-position: 0px 0px;
+}
+
+#filter_header {
+    font-size: 40px;
+    margin-top: 10px;
+    font-weight: lighter;
+    color: #7991a5;
+    clear: both;
+    width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-filter-sentence-container {
+    width: 100%;
+}
+
+#company_text_box {
+    width: 640px;
+}
+
+#work_length {
+    width: 200px;
+    margin-left: 20px;
+}
+
+.search-filterbox-50 {
+    border-top: none !important;
+    height: 190px;
+    width: 410px;
+    float: left;
+    padding-left: 0;
+    margin-right: 0;
+}
+
+#box_1, #box_2, #box_3, #box_4 {
+    height: 190px;
+    width: 410px;
+    float: left;
+}
+
+#sector_box checkbox {
+    font-size: 16px;
+}
+
+.checkbox {
+    width: 175px;
+    padding-left: 0px;
+}
+
+#sub_option_work_filter_sector input[type="checkbox"], #sub_option_academic_filter_school input[type="checkbox"] {
+    margin-top: -4px;
+}
+
+#sub_option_academic_filter_school {
+    height: 400px;
+}
+
+#ucas_points {
+    font-size: 40px;
+    height: 50px;
+    padding: 20px;
+    width: 120px;
+    margin-top: 30px;
+    float: left;
+    text-align: center;
+}
+
+#equivalent_to_box {
+    height: 132px;
+    width: 600px;
+    float: left;
+    margin-top: 10px;
+    margin-left: 30px;
+}
+
+#equivalent_to_box h4 {
+    margin-top: 0px;
+    font-weight: normal;
+}
+
+#equivalent_to_box h1 {
+    font-size: 50px;
+    font-weight: normal;
+    color: #85a0b2;
+}
+
+#equivalent_to_box h5 {
+    font-weight: normal;
+    color: #bbc9d2;
+    font-size: 18px;
+    margin-top: 15px;
+    line-height: 120%;
+}
+
+#a_level_box, #highers_box, #ib_box {
+    float: left;
+    margin-right: 20px;
+    width: 170px;
+}
+
+.sub_option_filter label {
+	border: 2px solid #d2d2d2;
+	padding: 15px 20px;
+	border-radius: 10px;
+	margin-left: 0px;
+	margin-right: 15px;
+	margin-top: 0px;
+}
+
+.sub_option_filter input[type="radio"] {
+	margin-right: 15px;
+	margin-top: -3px;
+}
+
+.add_to_filter_holder {
+	width: 821px;
+	background-color: #E7EDF3;
+	padding: 0px;
+	height: 43px;
+	margin-left: -20px;
+	margin-top: 10px;
+	margin-bottom: 0px;
+	border-radius: 0px 3px 3px 0px;
+	box-shadow: 0 4px #C8D4E0;
+    float: left;
+}
+
+.sub_option_divider {
+	text-transform: uppercase;
+	padding: 8px 22px;
+	width: 821px;
+	background-color: #E7EDF3;
+	font-size: 14px;
+	margin-bottom: 15px;
+	clear: both;
+	font-weight: bold;
+	border-top: 1px solid #C8D4E0;
+	border-bottom: 1px solid #C8D4E0;
+	margin-left: -20px;
+}
+
+.subject_input_helper {
+	padding: 10px 10px 0px 10px;
+	font-weight: bold;
+	color: #777;
+	margin-left: -20px;
+}
+
+.subject_category {
+	margin-bottom: 15px;
+}
+
+.grade_letter {
+	width: 50px;
+}
+
+#sub_option_sport_filter_society.sub_option_filter label {
+	border: 2px solid #d2d2d2;
+	padding: 15px 20px;
+	border-radius: 10px;
+	margin-left: 0px;
+	margin-right: 10px;
+	margin-top: 0px;
+	width: 250px;
+	margin-bottom: 10px;
+}
+
+#sub_option_work_filter_sector .work_sector {
+	border: 2px solid #d2d2d2;
+	padding: 15px 20px;
+	border-radius: 10px;
+	margin-left: 0px;
+	margin-right: 10px;
+	margin-top: 0px;
+	width: 250px;
+	margin-bottom: 10px;
+}
+
+#sub_option_academic_filter_skills .subject_category {
+	border: 2px solid #d2d2d2;
+	padding: 15px 20px;
+	border-radius: 10px;
+	margin-left: 0px;
+	margin-right: 10px;
+	margin-top: 0px;
+	width: 250px;
+	margin-bottom: 10px;
+}
+
+.auto_filter {
+    border-top: 10px solid #7991a5;
+    background: #fff;
+    margin-bottom: 10px;
+    min-height: 70px;
+    position: relative;
+    float: left;
+    width: 100%;
+}
+
+#auto_filter_container {
+	width: 100%;
+}
+
+#auto_filter_header {
+	width: 100%;
+	float: left;
+	color: #7991a5;
+	font-size: 25px;
+	margin-bottom: 15px;
+	display: none;
+}
+
+
+
+.checkbox_container_option p {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.checkbox_sidebar {
+	float: left;
+	height: 100%;
+	cursor: pointer;
+}
+
+.checkbox_option {
+    height: 20px;
+    width: 20px;
+    background-image:url('../img/checkbox.png');
+    background-position: -20px;
+    background-repeat: no-repeat;
+    background-color:#fff;
+    float: left;
+    margin-right: 20px;
+    margin-top: 18px;
+    margin-left: 20px;
+    margin-bottom: 18px;
+    border: 2px solid #CACACA;
+    display: table-cell;
+        vertical-align: middle;
+}
+
+.checkbox_title {
+	margin-left: 15px;
+	font-size: 18px;
+	margin-top: 15px;
+	float: left;
+}
+
+.checkbox_checked {
+    background-position: 0px;
+    border: none;
+}
+
+.checkbox_container_selected {
+    color: #fff;
+}
+
+.checkbox_slider_selected {
+	background-color: #f2c885;
+}
+
+.checkbox_checked {
+	border: 0px;
+}
+
+.availability_option {
+	clear: both;
+}
+
+.checkbox_radio_option input[type="radio"] {
+	margin-right: 10px;
+	    margin-top: -6px;
+}
+
+.checkbox_radio_option {
+	float: left;
+	 margin-right: 20px;
+	 font-size: 17px;
+	 margin-top: 17px;
+	 border: 0px;
+	 padding: 0px;
+}
+
+.mini_checkbox {
+	float: left;
+	border: 2px solid #a7b6c1;
+	padding: 10px;
+	width: 366px;
+	margin-left: 15px;
+	margin-bottom: 15px;
+}
+
+.mini_checkbox_container {
+	float: left;
+	margin-top: -5px;
+	display: none;
+}
+
+#sub_option_segment_filter {
+	margin-top: 40px;
+}
+
+#specific_talent_pool, #all_talent_pool, #specific_opportunities, #all_opportunities {
+	border: 0px;
+	padding: 0px;
+	margin-bottom: 20px;
+}
+
+#include_exclude_select {
+	width: 100px;
+	font-size: 17px;
+	font-weight: bold;
+}
+
+#include_exclude_box_header {
+	width: 660px;
+	font-size: 20px;
+	margin-bottom: 25px;
+	float: left;
+	margin-top: 7px;
+}
+
+#exclude_users_box {
+	width: 100%;
+	height: 100px;
+	font-size: 18px;
+	font-family: "Source Sans Pro", Helevetica, sans-serif;
+	padding: 10px;
+	margin-top: -10px;
+}
+
+#checkbox_container {
+	padding: 0px;
+}
+
+#checkbox_container .add_to_filter_holder {
+	margin-left: 0px;
+	margin-top: 0px;
+}
+
+#checkbox_container .box_header {
+	width: 600px;
+	margin-left: 15px;
+	font-size: 17px;
+	margin-top: 17px;
+	cursor: pointer;
+}
+
+.ui-datepicker-calendar td {
+	padding: 7px 10px;
+	text-align: center;
+	cursor: pointer;
+}
+
+.ui-state-active {
+	color: #fff;
+}
+
+.ui-datepicker-current-day {
+	background-color: #e67e22;
+	color: #fff;
+}
+
+.ui-datepicker-title {
+	padding: 7px;
+	text-align: center;
+	width: 160px;
+	float: left;
+}
+
+.ui-datepicker-calendar tbody {
+	padding: 10px;
+}
+
+#ui-datepicker-div {
+	border: 1px solid #7991a5;
+	background-color: #fff;
+}
+
+#ui-datepicker-div table {
+	margin-bottom: 0px;
+}
+
+.ui-datepicker-prev {
+	float: left;
+	padding: 7px;
+	cursor: pointer;
+}
+
+.ui-datepicker-next {
+	float: right;
+	padding: 7px;
+	cursor: pointer;
+}
+
+#exclude_picker_from {
+	width: 120px;
+}
+
+#exclude_description {
+	float: left;
+	font-size: 18px;
+	padding: 10px;
+}
+
+#exclude_picker_to {
+	width: 120px;
+}
+
+#progress_bar {
+	padding-left: 20px;
+	width: 100%;
+	height: 80px;
+	margin: 0px 0px 0px 0px;
+	clear: both;
+	padding-right: 0px;
+	background-color: #fff;
+	border: 1px solid #d2d2d2;
+}
+
+#candidates_label {
+	text-align: left;
+	font-size: 18px;
+	color: #34495e;
+	font-weight: normal;
+	padding-top: 30px;
+	float: left;
+	margin-left: 10px;
+	margin-top: -5px;
+}
+
+#search-form {
+	margin-top: 0px;
+}
+
+#create_talent_pool_btn {
+	float: right;
+	width: 200px;
+	height: 45px;
+	font-size: 18px;
+	font-weight: normal;
+	color: #606060;
+	text-align: center;
+	padding-top: 11px;
+	padding-bottom: 11px;
+	padding: 11px 20px;
+	cursor: pointer;
+	box-shadow: 0 4px #bdc3c7;
+	-moz-border-radius: 3px;
+	-o-border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	font-family: "Source Sans Pro", Helvetica;
+	font-size: 17px;
+	border: 0px solid #bdc3c7;
+	margin-right: 15px;
+	margin-top: 15px;
+	background-color: #ecf0f1;
+}
+
+/* AL Additions */
+
+.checkbox_container_option {
+    height: 60px;
+    width: 261px;
+    float: left;
+    margin-right: 20px;
+    background-color: #fff;
+    color: #000;
+    margin-top: 5px;
+    moz-border-radius: 3px;
+    -o-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    font-size: 17px;
+    border: 2px solid #CACACA;
+    cursor: pointer;
+    padding-right: 20px;
+    display: table;
+    margin-bottom: 15px;
+}
+
+.checkbox_container_selected {
+	
+}
+
+
+.key_skill {
+    width: 370px;
+    height: 61px;
+    float: left;
+    margin-bottom: 15px;
+    moz-border-radius: 3px;
+    -o-border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #d2d2d2;
+    margin-right: 20px;
+}
+
+.key_skill_level {
+    float: left;
+}
+
+.key_skill select {
+    height: 35px;
+    margin-top: 13px;
+    width: 173px;
+    border: 1px solid #8e44ad;
+    float: left;
+}
+
+.key_skill input {
+	opacity: 0;
+}
+
+.key_skill p {
+	display: block;
+	margin-top: 16px;
+	float: left;
+}
+
+.key_skill .checkbox_container_option {
+	margin-top: 0px;
+	width: 215px;
+	border: none;
+	height: 55px;
+	background-color: transparent;
+}
+
+.skill_selected {
+    background-color: #9b59b6;
+    border: 1px solid #8e44ad;
+}
+
+.checkbox_checked {
+	color: #fff;
+}
+
+.capabilities.checkbox_container_option {
+	width: 370px;
+}
+
+.capabilities.checkbox_container_selected {
+	background-color: #9b59b6;
+	border: 1px solid #8e44ad;
+}
+
+.capabilities input {
+	opacity: 0;
+}
+
+select[id="language"] {
+	width: 520px;
+}
+
+select[id="language-level-other"] {
+	width: 230px;
+}
+
+#min-work-length, #max-work-length {
+	width: 385px;
+}
+
+#max-work-length {
+	margin-right: 0px;
+}
+
+.and_or_label {
+	float: left;
+	margin-left: 25px;
+	margin-top: 9px;
+	font-weight: bold;
+	color: #4c7298;
+}
+
+
+
+.and_search, .or_search {
+	padding: 4px 0px;
+	width: 110px;
+	float: left;
+	cursor: pointer;
+	font-weight: normal;
+	background-color: #cedae6;
+	color: #6e8dac;
+	margin-bottom: 0px;
+	text-transform: uppercase;
+	margin-left: 10px;
+	text-align: center;
+	height: 30px;
+	margin-top: 7px;
+	font-size: 16px;
+}
+
+.and_search {
+	border-radius: 8px 0px 0px 8px;
+}
+
+.or_search {
+	margin-left: 0px;
+	border-radius: 0px 8px 8px 0px;
+}
+
+.search_type_on {
+	background-color: #4c7298;
+	color: #fff;
+	font-weight: bold;
+}
+
+#search-form-filter {
+	padding-bottom: 0px;
+}

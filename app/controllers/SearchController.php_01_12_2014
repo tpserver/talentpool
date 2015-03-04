@@ -1,0 +1,638 @@
+<?php
+
+class SearchController extends \BaseController {
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    function __construct()
+    {
+        $this->beforeFilter('auth');
+        if( isset(Sentry::getUser()->id) )
+            $this->_user = User::find(Sentry::getUser()->id);
+    }
+    
+    public function index()
+    {       
+//        $data = [ 'workTypes'   => WorkType::has('user')->get(),
+//            'sports'            => Sport::has('user')->get(),
+//            'sportLeves'        => SportLevel::has('user')->get(),
+//            'sportPositions'    => SportPosition::has('user')->get(),
+//            'workOptions'       => Option::has('user')->where('category_id', '=', 1)->get(),
+//            'ethnicities'       => Ethnicity::all(),
+//            'academicOptions'   => Option::has('user')->where('category_id', '=', 2)->get(),
+//            'skillOptions'      => Option::where('subcategory_id', '=', 9)->get(),
+//            'languages'         => Language::orderBy('name', 'ASC')->get(),
+//            'languageLevels'    => LanguageLevel::all(),
+//            'socialPositions'   => SocialPosition::has('user')->get(),
+//            'socialCategories'  => SocialCategory::has('user')->get(),
+//            'degreeTypes'       => DegreeType::has('user')->get(),
+//            'degreeResults'     => DegreeResult::has('user')->get(),
+//            'degreeSubjects'    => DegreeSubject::has('user')->get(),
+//            'universities'      => University::has('user')->get(),
+//            'socialCategories'  => SocialCategory::has('user')->get(),
+//            'socialPositions'   => SocialPosition::has('user')->get(),
+//            'workDurations'     => WorkDuration::has('user')->get(),
+//            'usersCount'        => User::where('activated', '=', 1)->count(),
+//            'campaign'          => Input::get('campaign', 0),
+//        ];
+        $opportunity_details = '';
+        $usersCount        = User::where('activated', '=', 1)->where('group_id', '=', 1)->count();
+        if(Session::has('opportunity'))
+        {
+            $oppr_arr = array();
+            $locations_array_result ='';
+            //$locations = array();
+            //$opportunity_details = Opportunity::where('id', '=', Session::get('opportunity'))->get();
+            $opportunity_details = Opportunity::where('id', '=', Session::get('opportunity'))->with('workType')->with('locations')->with('workSector')->get();
+            
+            foreach($opportunity_details as $opportunity_detail)
+                $oppr_arr = $opportunity_detail;
+            //echo $oppr_arr->id." - ";
+            //print_r($oppr_arr['locations']);
+            foreach ($oppr_arr['locations'] as $location)
+            {
+                $locations_array = $location;
+                $locations_array_result .= $locations_array->id.",";
+            }
+            $locations_array_result = substr($locations_array_result, 0, -1);
+            //echo $locations_array_result;die();
+            if($oppr_arr->opportunity_type==1)
+            {
+                $opportunity_date = $oppr_arr->opportunity_date;
+                //$opportunity_time = explode($opportunity_date);
+                $locations_array_result = explode(",",$locations_array_result);
+                $usersCount = User::where('activated', '=', 1)->where('group_id', '=', 1)->where('availability_date', '<=', $opportunity_date);
+                //print_r($locations_array_result);die();
+                foreach ($locations_array_result as $param)
+                {
+                    $usersCount = $usersCount->whereHas('location', function($q) use($param){
+                        $q->where('location_id', '=', $param );
+                    });
+                }
+                //$usersCount = $usersCount->count();
+                //$sqldata = $usersCount->toSql();
+                //echo $sqldata;die();
+                $users = $usersCount->get();
+                
+                $usersCount = $users->count();
+            }
+            
+            //echo $opportunity_date;
+            //die();
+        }
+        $data = [ 'workTypes'   => WorkType::where('approved', '=', 1)->get(),
+            'workOptions'       => Option::where('category_id', '=', 1)->get(),
+            'workDurations'     => WorkDuration::all(),
+            'sports'            => Sport::all(),
+            'sportNames'        => SportName::where('approved', '=', 1)->get(),
+            'sportLevels'       => SportLevel::where('approved', '=', 1)->get(),
+            'sportPositions'    => SportPosition::all(),
+            'ethnicities'       => Ethnicity::all(),
+            'academicOptions'   => Option::where('category_id', '=', 2)->get(),
+            'skillOptions'      => Skill::with('SkillGroup')->get(),
+            'languages'         => LanguageName::orderBy('name', 'ASC')->get(),
+            'languageLevels'    => LanguageLevel::all(),
+            'degreeTypes'       => DegreeType::where('approved', '=', 1)->get(),
+            'degreeResults'     => DegreeResult::where('approved', '=', 1)->get(),
+            'degreeSubjects'    => DegreeSubject::where('approved', '=', 1)->get(),
+            'schoolOptions'     => Option::where('subcategory_id', '=', 5)->with('group')->get(),
+            'universities'      => University::all(),
+            'socialCategories'  => SocialCategory::where('approved', '=', 1)->get(),
+            'socialPositions'   => SocialPosition::where('approved', '=', 1)->get(),
+            'capabilities'      => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+            'attributes'        => Option::where('group_id', '=', 10)->with('group')->get(),
+            'experience'        => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+            'usersCount'        => $usersCount,
+            'campaign'          => Input::get('campaign', 0),
+            'opporDetails'      => $opportunity_details,
+            'specific_opportunities' => Opportunity::where('employeer_id', '=', $this->_user->id)->get(),
+            'specific_talentpools' => CandidatesPool::where('user_id', '=', $this->_user->id)->get(),
+        ];
+        //print_r($data['specific_opportunities']);die();
+//        return View::make('db_search', $data );
+        return View::make('db_search_new_dynamic', $data );
+    }
+    
+    public function pooledit($id)
+    {
+        $employer_id = $this->_user->id;
+        
+        $candidatesPools = CandidatesPool::with('users')->with('option')->with('social')->with('language')->with('workLength')->with('workType')->with('sportLevel')->with('sportName')->with('socialCategory')->with('socialPosition')->with('skill')->with('degreeTypes')->with('degreeResults')->with('degreeSubjects')->find($id);
+	$users = [];
+        $candidateOptions = [];
+        $usercount = 0;
+        $workSectors = [];
+        foreach ($candidatesPools->users as $user) {
+            $users[] = $user->id;
+            $usercount++;
+        }
+        foreach($candidatesPools->option as $option)
+        {
+            //print_r($option);
+            $candidateOptions['id'] = $option->id;
+            $candidateOptions['name'] = $option->name;
+            $candidateOptions['category'] = $option->category_id;
+            $candidateOptions['subcategory_id'] = $option->subcategory_id;
+            $candidateOptions['group_id'] = $option->group_id;
+            //$candidateOptions['option_id'] = $option->option_id;
+            //$candidateOptions[] = $option;
+            //echo $candidateOptions;
+            $candidateOptionsArray[] = $candidateOptions;
+        }
+        if(!isset($candidateOptionsArray))
+        {
+            $candidateOptionsArray = [];
+        }
+        foreach($candidatesPools->workLength as $worklengths)
+        {
+            $worklength[] = $worklengths;
+        }
+        if(!isset($worklength))
+        {
+            $worklength = [];
+        }
+        foreach($candidatesPools->workType as $worktype)
+        {
+            $worktypes[] = $worktype;
+        }
+        if(!isset($worktypes))
+        {
+            $worktypes = [];
+        }
+        foreach($candidatesPools->sportName as $sportName)
+        {
+            $sportnames[] = $sportName;
+        }
+        if(!isset($sportnames))
+        {
+            $sportnames = [];
+        }
+        foreach($candidatesPools->sportLevel as $sportLevel)
+        {
+            $sportlevels[] = $sportLevel;
+        }
+        if(!isset($sportlevels))
+        {
+            $sportlevels = [];
+        }
+        foreach($candidatesPools->socialPosition as $socialPosition)
+        {
+            $socialpositions[] = $socialPosition;
+        }
+        if(!isset($socialpositions))
+        {
+            $socialpositions = [];
+        }
+        foreach($candidatesPools->socialCategory as $socialCategory)
+        {
+            $socialcategories[] = $socialCategory;
+        }
+        if(!isset($socialcategories))
+        {
+            $socialcategories = []; 
+        }
+        foreach($candidatesPools->skill as $skill)
+        {
+            $skills[] = $skill;
+        }
+        if(!isset($skills))
+        {
+            $skills = []; 
+        }
+        foreach($candidatesPools->degreeTypes as $degreeTypes)
+        {
+            $degreetypes[] = $degreeTypes;
+        }
+        if(!isset($degreetypes))
+        {
+            $degreetypes = []; 
+        }
+        foreach($candidatesPools->degreeResults as $degreeResults)
+        {
+            $degreeresults[] = $degreeResults;
+        }
+        if(!isset($degreeresults))
+        {
+            $degreeresults = []; 
+        }
+        foreach($candidatesPools->degreeSubjects as $degreeSubjects)
+        {
+            $degreesubjects[] = $degreeSubjects;
+        }
+        if(!isset($degreesubjects))
+        {
+            $degreesubjects = []; 
+        }
+        //print_r($worklength);die();
+        
+        //print_r($candidateOptionsArray);
+        //die();
+        //echo $employer_id;die();
+        $opportunity_details = '';
+        $usersCount        = User::where('activated', '=', 1)->where('group_id', '=', 1)->count();
+        if(Session::has('opportunity'))
+        {
+            $oppr_arr = array();
+            $locations_array_result ='';
+            //$locations = array();
+            //$opportunity_details = Opportunity::where('id', '=', Session::get('opportunity'))->get();
+            $opportunity_details = Opportunity::where('id', '=', Session::get('opportunity'))->with('workType')->with('locations')->with('workSector')->get();
+            
+            foreach($opportunity_details as $opportunity_detail)
+                $oppr_arr = $opportunity_detail;
+            //echo $oppr_arr->id." - ";
+            //print_r($oppr_arr['locations']);
+            foreach ($oppr_arr['locations'] as $location)
+            {
+                $locations_array = $location;
+                $locations_array_result .= $locations_array->id.",";
+            }
+            $locations_array_result = substr($locations_array_result, 0, -1);
+            //echo $locations_array_result;die();
+            if($oppr_arr->opportunity_type==1)
+            {
+                $opportunity_date = $oppr_arr->opportunity_date;
+                //$opportunity_time = explode($opportunity_date);
+                $locations_array_result = explode(",",$locations_array_result);
+                $usersCount = User::where('activated', '=', 1)->where('group_id', '=', 1)->where('availability_date', '<=', $opportunity_date);
+                //print_r($locations_array_result);die();
+                foreach ($locations_array_result as $param)
+                {
+                    $usersCount = $usersCount->whereHas('location', function($q) use($param){
+                        $q->where('location_id', '=', $param );
+                    });
+                }
+                //$usersCount = $usersCount->count();
+                //$sqldata = $usersCount->toSql();
+                //echo $sqldata;die();
+                $users = $usersCount->get();
+                
+                $usersCount = $users->count();
+            }
+            
+            //echo $opportunity_date;
+            //die();
+        }
+        $data = [
+            'workTypes'         => WorkType::where('approved', '=', 1)->get(),
+            'workOptions'       => Option::where('category_id', '=', 1)->get(),
+            'workDurations'     => WorkDuration::all(),
+            'sports'            => Sport::all(),
+            'sportNames'        => SportName::where('approved', '=', 1)->get(),
+            'sportLevels'       => SportLevel::where('approved', '=', 1)->get(),
+            'sportPositions'    => SportPosition::all(),
+            'ethnicities'       => Ethnicity::all(),
+            'academicOptions'   => Option::where('category_id', '=', 2)->get(),
+            'skillOptions'      => Skill::with('SkillGroup')->get(),
+            'languages'         => LanguageName::orderBy('name', 'ASC')->get(),
+            'languageLevels'    => LanguageLevel::all(),
+            'degreeTypes'       => DegreeType::where('approved', '=', 1)->get(),
+            'degreeResults'     => DegreeResult::where('approved', '=', 1)->get(),
+            'degreeSubjects'    => DegreeSubject::where('approved', '=', 1)->get(),
+            'schoolOptions'     => Option::where('subcategory_id', '=', 5)->with('group')->get(),
+            'universities'      => University::all(),
+            'socialCategories'  => SocialCategory::where('approved', '=', 1)->get(),
+            'socialPositions'   => SocialPosition::where('approved', '=', 1)->get(),
+            'capabilities'      => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+            'attributes'        => Option::where('group_id', '=', 10)->with('group')->get(),
+            'experience'        => Option::where('subcategory_id', '=', 10)->with('group')->get(),
+            'specific_opportunities' => Opportunity::where('employeer_id', '=', $this->_user->id)->get(),
+            'specific_talentpools' => CandidatesPool::where('user_id', '=', $this->_user->id)->get(),
+            'usersCount'        => $usercount,
+            'campaign'          => Input::get('campaign', 0),
+            'opporDetails'      => $opportunity_details,
+            'candidateOptions'  => $candidateOptionsArray,
+            'candidateworkTypes' => $worktypes,
+            'candidateworkLengths' => $worklength,
+            'candidateSportLevels' => $sportlevels,
+            'candidateSportNames' => $sportnames,
+            'candidateSocialpositions' => $socialpositions,
+            'candidateSocialCategories' => $socialcategories,
+            'candiateSkills' => $skills,  
+            'candidatedegreeTypes' => $degreetypes,
+            'candidatedegreeResults' => $degreeresults,
+            'candidatedegreeSubjects' => $degreesubjects,
+        ];
+	$data['candidatesPools'] = $candidatesPools;
+        
+        return View::make('db_search_new_dynamic_edit', $data );
+    }
+    
+    public function getCount()
+    {
+        $u = User::where('activated', '=', 1)->where('group_id', '=', 1);
+        $i = 0;
+        
+        if(Session::has('opportunity'))
+        {
+            $oppr_arr = array();
+            $locations_array_result ='';
+            
+            $opportunity_details = Opportunity::where('id', '=', Session::get('opportunity'))->with('workType')->with('locations')->with('workSector')->get();
+            foreach($opportunity_details as $opportunity_detail)
+                $oppr_arr = $opportunity_detail;
+            
+            foreach ($oppr_arr['locations'] as $location)
+            {
+                $locations_array = $location;
+                $locations_array_result .= $locations_array->id.",";
+            }
+            $locations_array_result = substr($locations_array_result, 0, -1);
+            
+            if($oppr_arr->opportunity_type==1)
+            {
+                $opportunity_date = $oppr_arr->opportunity_date;
+                $locations_array_result = explode(",",$locations_array_result);
+                $u = User::where('activated', '=', 1)->where('group_id', '=', 1)->where('availability_date', '<=', $opportunity_date);
+                
+                foreach ($locations_array_result as $param)
+                {
+                    $u = $u->whereHas('location', function($q) use($param){
+                        $q->where('location_id', '=', $param );
+                    });
+                }
+            }
+        }
+        
+        $languages              = Input::get('language', []) ;
+        $languageLevels         = Input::get('language-level', []);
+        $workOptions            = Input::get('work_option', []);
+        $capabilities           = Input::get('capabilities', []);
+        $experience             = Input::get('experience', []);
+        $workTypes              = Input::get('work_type_option', []);
+        $socialCategory         = Input::get('society_category', []);
+        $socialPosition         = Input::get('society_position', []);
+        $attributes             = Input::get('attributes', []);
+        $sportLevels            = Input::get('sport_level', []);
+        $sportNames             = Input::get('sport_name', []);
+        $skills                 = Input::get('skills', []);
+        $degreeTypeC            = Input::get('degree_type', []);
+        $degree_resultC         = Input::get('degree_result', []);
+        $schoolSubject          = Input::get('school-subject', []);
+        //$universityYearFrom     = Input::get('university_from');
+        //$universityYearTo       = Input::get('university_to', []);
+        $universitySubject      = Input::get('university-subject', []);
+        $minWorkDuration        = Input::get('min-work-length', [0]);
+        $maxWorkDuration        = Input::get('max-work-length', [0]);
+        $minWorkDuration        = (int)$minWorkDuration[0];
+        $maxWorkDuration        = (int)$maxWorkDuration[0];
+        $exclude_by_talentpool  = Input::get('exclude_by_talentpool', [0]);
+        $include_exclude_selects = Input::get('include_exclude_select',[0]);
+        $include_exclude_select = (int)$include_exclude_selects[0];
+        $excluded_by_opportunity = Input::get('excluded_by_opportunity', [0]);
+        $exclude_by_opportunity = (int)$excluded_by_opportunity[0];
+        
+        if( $minWorkDuration > 0 && $maxWorkDuration > 0 )
+        {
+            $u = $u->whereHas('work', function($q) use($minWorkDuration, $maxWorkDuration){
+                $q->whereBetween('work_duration_id', array($minWorkDuration, $maxWorkDuration) );
+            });
+        }elseif($minWorkDuration > 0 )
+        {
+            $u = $u->whereHas('work', function($q) use($minWorkDuration){
+                $q->where('work_duration_id', '=', $minWorkDuration );
+            });
+        }elseif($maxWorkDuration > 0)
+        {
+            $u = $u->whereHas('work', function($q) use($maxWorkDuration){
+                $q->where('work_duration_id', '=', $maxWorkDuration );
+            });
+        }
+        
+        //if( $universityYearFrom > 0 && $universityYearTo > 0 )
+        //{
+        //    $u = $u->whereHas('degree', function($q) use($universityYearFrom, $universityYearTo){
+        //        $q->whereBetween('degree_year', array($universityYearFrom, $universityYearTo) );
+        //    });
+        //}elseif($universityYearFrom > 0 )
+        //{
+        //    $u = $u->whereHas('degree', function($q) use($universityYearFrom){
+        //        $q->where('degree_year', '=', $universityYearFrom );
+        //    });
+        //}elseif($universityYearTo > 0)
+        //{
+        //    $u = $u->whereHas('degree', function($q) use($universityYearTo){
+        //        $q->where('degree_year', '=', $universityYearTo );
+        //    });
+        //}
+        
+        $options = array_merge($workOptions, $experience, $capabilities, $attributes);
+        foreach ($options as $param)
+        {
+            $u = $u->whereHas('option', function($q) use($param){
+                $q->where('option_id', '=', $param );
+            });
+        }
+        
+        foreach ($schoolSubject as $param)
+        {
+            $u = $u->whereHas('schoolQualification', function($q) use($param){
+                $q->whereHas('type', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($skills as $param)
+        {
+            $u = $u->whereHas('skill', function($q) use($param){
+                $q->where('skill_id', '=', $param );
+            });
+        }
+        
+        foreach ($workTypes as $param)
+        {
+            $u = $u->whereHas('work', function($q) use($param){
+                $q->whereHas('type', function($q) use($param){
+                    $q->where('id', '=', $param);
+                } );
+            });
+        }
+        
+        foreach ($socialCategory as $param)
+        {
+            $u = $u->whereHas('social', function($q) use($param){
+                $q->whereHas('category', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($degree_resultC as $param)
+        {
+            $u = $u->whereHas('degree', function($q) use($param){
+                $q->whereHas('result', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($degreeTypeC as $param)
+        {
+            $u = $u->whereHas('degree', function($q) use($param){
+                $q->whereHas('type', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        foreach ($universitySubject as $param)
+        {
+            $u = $u->whereHas('degree', function($q) use($param){
+                $q->whereHas('subject', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        foreach ($socialPosition as $param)
+        {
+            $u = $u->whereHas('social', function($q) use($param){
+                $q->whereHas('position', function($q) use($param){
+                    $q->where('id', '=', $param);
+                });
+            });
+        }
+        
+        foreach ($sportLevels as $param)
+        {
+            $u = $u->whereHas('sport', function($q) use($param){
+                $q->where('sport_level_id', '=', $param );
+            });
+        }
+        
+        foreach ($sportNames as $param)
+        {
+            $u = $u->whereHas('sport', function($q) use($param){
+                $q->where('sport_name_id', '=', $param );
+            });
+        }
+        
+        foreach ($languages as $language)
+        {
+            $u = $u->whereHas('language', function($q) use($language, $languageLevels, $i){
+                    $q = $q->whereHas('name', function($q)  use($language, $languageLevels, $i){
+                        $q->where('name_id', '=', $language);
+                        if( isset( $languageLevels[$i] ) )
+                        {
+                            $q = $q->where('level_id', '=', $languageLevels[$i]);
+                        }
+                    });
+            });
+            $i++;
+        }
+        $sqldata = $u->toSql();
+        $userList = $u->select('id')->get();
+        $users = array();
+        foreach ($userList as $ul)
+            $users[] = $ul->id;
+        $userCount = $u->count();
+        
+        if($exclude_by_talentpool[0] == 1)
+        {
+            $talentPool_id = CandidatesPoolUser::groupBy('user_id')->get();
+            foreach($talentPool_id as $ids)
+                $talentPoolUsers[] = $ids->user_id;
+            $users = array_diff($users, $talentPoolUsers);
+            $userCount = count($users);
+        }
+        if($exclude_by_talentpool[0] == 2)
+        {
+            $talentPool_id_values = '';
+            $exclude_by_talentPool_ids = Input::get('specific-talentpool',[]);
+            foreach($exclude_by_talentPool_ids as $value)
+            {
+                $talentPool_id = CandidatesPoolUser::select('user_id')->where('candidates_pool_id', '=', $value)->groupBy('user_id')->get();
+                foreach($talentPool_id as $ids)
+                    $talentPool_id_values .= $ids->user_id.",";
+            }
+            $talentPool_id_values = explode(",",$talentPool_id_values);
+            $users = array_diff($users, $talentPool_id_values);
+            $userCount = count($users);
+            //print_r($talentPool_id_values);die();
+        }
+        if($include_exclude_select==2 && $exclude_by_opportunity==1)
+        {
+            $opportunity_id_values = '';
+            $candidatepool_ids = Campaign::with('candidatesPool')->get();
+            foreach($candidatepool_ids as $value)
+                $values_candidates[] = $value->candidates_pool_id;
+            $values_candidates = array_unique($values_candidates);
+            foreach($values_candidates as $candidate_id)
+            {
+                $talentPool_id = CandidatesPoolUser::select('user_id')->where('candidates_pool_id', '=', $candidate_id)->groupBy('user_id')->get();
+                foreach($talentPool_id as $ids)
+                    $opportunity_id_values .= $ids->user_id.",";
+            }
+            $opportunity_id_values = explode(",",$opportunity_id_values);
+            $users = array_diff($users, $opportunity_id_values);
+            $userCount = count($users);
+            //print_r($userCount);
+        }
+        if($include_exclude_select==2 && $exclude_by_opportunity==2)
+        {
+            $opportunity_id_values = '';
+            $specific_opportunity_values = Input::all('specific_opportunity_value', []);
+            $specific_values = $specific_opportunity_values['specific_opportunity_value'];
+            
+            $candidatepool_ids = Campaign::whereIn('opportunity_id', $specific_values)->with('candidatesPool')->get();
+            foreach($candidatepool_ids as $value)
+                $values_candidates[] = $value->candidates_pool_id;
+            
+            $values_candidates = array_unique($values_candidates);
+            
+            foreach($values_candidates as $candidate_id)
+            {
+                $talentPool_id = CandidatesPoolUser::select('user_id')->where('candidates_pool_id', '=', $candidate_id)->groupBy('user_id')->get();
+                foreach($talentPool_id as $ids)
+                    $opportunity_id_values .= $ids->user_id.",";
+            }
+            
+            $opportunity_id_values = explode(",",$opportunity_id_values);
+            $users = array_diff($users, $opportunity_id_values);
+            $userCount = count($users);
+        }
+        
+        Session::put('candidates_pool_users', $users);
+        $userList = implode( ',' , $users); 
+        return ['userCount' => $userCount, 'users' => $userList, 'sqldata' => $sqldata];
+    }
+
+    public function getCompanies()
+    {
+        return University::all();
+    }
+
+    public function getUniversities()
+    {
+        return $this->_getNamesForTextSearch('University');
+    }
+
+    function getDegreeSubjects()
+    {
+        return $this->_getNamesForTextSearch('DegreeSubject');
+    }
+
+    public function getUniversityDegrees()
+    {
+        return $this->_getNamesForTextSearch('DegreeType');
+    }
+
+    public function getSports()
+    {
+        return $this->_getNamesForTextSearch('SportName');
+    }
+
+
+    public function getSocials()
+    {
+        return $this->_getNamesForTextSearch('Social');
+    }
+
+    private function _getNamesForTextSearch($modelName)
+    {
+        $name = Input::get('q', '');
+        return $modelName::where('name', 'LIKE', "$name%")->select(['id', 'name'])->get();
+    }
+}

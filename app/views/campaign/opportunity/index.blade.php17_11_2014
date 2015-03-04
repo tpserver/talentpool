@@ -1,0 +1,93 @@
+@include('common.head', array('title', 'GradList - Frequently Asked Questions') )
+<body>
+@include('common.employeer_top_menu')
+<div id="main_container">
+    <h1>Campaigns / New Campaign</h1>
+    @include('common.progress_indicator')
+    <div id="campaing-steps-container">
+        <div id="campaing-step-error-container" onclick="$(this).fadeOut()">{{trans('Please select Opportunity')}}</div>
+            {{Form::open(['route'=>'new-campaign.save-step', 'id' => 'opportunity-form'])}}
+            {{Form::hidden('step', 'opportunity')}}
+                <div id="opportunity-container" class="campaign-step-container">
+                    <div id="opportunity-select-box" class="campaing-select-container">
+                        <div style="margin-bottom: 15px; font-size: 20px;">Select Opportunity</div>
+                        <div id="existing-opportunity-container">
+                            <table id="opportunity-table" class="new-campaing-component-table table table-hover table-bordered table-striped">
+                                <tr>
+                                    <th></th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Work Type</th>
+                                    <th>Sectors</th>
+                                </tr>
+                                @foreach( $opportunities as $opportunity )
+                                <tr>
+                                    <td class="candidate_radio">{{Form::radio('opportunity', $opportunity->id, ($opportunity->id == Session::get('opportunity', 0)) )}}</td>
+                                    <td class="pool_name">{{link_to_route('opportunity.show', $opportunity->name, [$opportunity->id])}}</td>
+                                    <td class="pool_size">
+                                        @foreach($opportunity->locations as $location)
+                                        <div class="round-box" style="background: #2ecc71" >{{$location->name}}</div>
+                                        @endforeach()
+                                    </td>
+                                    <td class="pool_size">{{$opportunity->workType->name}}</td>
+                                    <td class="pool_filters">
+                                            @foreach($opportunity->workSector as $workSector)
+                                                <div class="round-box" style="background: {{$workSector->category['colour']}}" >{{$workSector->name}}</div>
+                                            @endforeach
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </table>
+                            <div id="new-opportunity-btn" class="new-campaing-component-btn">{{Form::radio('opportunity', 0)}}New Opportunity</div>
+                        </div>
+                    </div>
+                    <div class="button-holder">
+                        <div class="red_button campaing-next-step-btn" onclick="campaingNextButton('opportunity-form', 'Please select opportunity')">Next</div>
+                    </div>
+                </div>
+            {{Form::close()}}
+        </div>
+    <div id="spacer"></div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="show_opportunity_type" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        <!--<form name="opportuityformtype" id="opportuityformtype" method="post" action="">-->
+          What will you be contacting your talent pool about?
+        {{Form::open(['route'=>'new-campaign.save-step-types', 'id' => 'opportuityformtype'])}}
+        {{Form::hidden('step', 'opportunity')}}
+          <input type="hidden" name="opportunity" value="0" />
+          <input type="hidden" id="form_type_opportunity" name="form_type_opportunity" value="" >
+          <button type="button" class="btn btn-primary" onclick="setOpportunityType(1);">A specific role</button>
+          <button type="button" class="btn btn-primary" onclick="setOpportunityType(2);">An upcoming event</button>
+          <button type="button" class="btn btn-primary" onclick="setOpportunityType(3);">General intro</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+{{ HTML::script('js/jquery-1.9.1.min.js') }}
+{{ HTML::script('js/bootstrap.min.js') }}
+@include('campaign.common.bottom')
+<script>
+    setProgressIndicator('opportunity');
+    function setOpportunityType(valID)
+    {
+    //alert(valID);
+        $("#form_type_opportunity").val(valID);
+        $("#opportuityformtype").submit();
+    }
+</script>
+@section('bottom.content')
+    
+@stop

@@ -1,0 +1,68 @@
+body {
+	margin: 0px;
+	-webkit-font-smoothing: antialiased;
+	font-family: 'Lato', "Helvetica", Arial, sans-serif;
+	background-color: #ecf2f7;
+}
+
+#topbar {
+	background-color: #fff;
+	padding-left: 300px;
+	height: 50px;
+}
+
+#logo {
+	width: 117px;
+	height: 25px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	background-image:url('../img/GL_logo_small.png');
+}
+
+#search_parameters {
+	width: 1000px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+}
+
+a {
+	text-decoration: none;
+	color: #000;
+}
+
+h3 {
+	margin-top: 0px;
+	clear: both;
+}
+
+h4 {
+	margin-top: 0px;
+	clear: both;
+}
+
+h5 {
+	margin-top: 0px;
+	clear: both;
+	color: #5c5c5c;
+}
+
+.spacer {
+	clear: both;
+}
+
+form {
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+}
+
+#footer {
+	width: 100%;
+	height: 100px;
+	background-color: #d6e2ec;
+	clear: both;
+	margin-top: 20px;
+	background-image:url('../img/GL_mountain_small.png');
+	background-repeat: no-repeat;
+	background-position: center;
+}

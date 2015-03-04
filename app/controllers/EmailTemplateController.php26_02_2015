@@ -1,0 +1,127 @@
+<?php 
+
+class EmailTemplateController extends BaseController {
+
+/*
+|--------------------------------------------------------------------------
+| Default Home Controller
+|--------------------------------------------------------------------------
+|
+| You may wish to use controllers instead of, or in addition to, Closure
+| based routes. That's great! Here is an example controller method to
+| get you started. To route to this controller, just add the route:
+|
+| Route::get('/', 'HomeController@showWelcome');
+|
+*/
+    function __construct()
+    {
+        $this->beforeFilter('auth');
+        if( isset(Sentry::getUser()->id) )
+            $this->_user = User::find(Sentry::getUser()->id);
+    }
+    
+    public function index()
+    {
+        $emailTemplates = EmailTemplate::with('campaign')->get();
+        return  View::make('email-templates.index', ['emailTemplates' => $emailTemplates] );
+    }
+
+    public function show($id)
+    {
+        $emailTemplate = EmailTemplate::find($id);
+        return  View::make('email-templates.show', ['emailTemplate' => $emailTemplate] );
+    }
+    
+    public function create()
+    {
+        return View::make('email-templates.create');
+    }
+    
+    public function destroy($id)
+    {
+        $emailTemplate = EmailTemplate::find($id);
+        $emailTemplate->delete();
+        return Redirect::to('email-template');
+    }
+    
+    public function store()
+    {
+        $data_email = Input::all();
+        //print_r($data_email);die();
+        $data['subject'] = $data_email['subject'];
+        $data['_token'] = $data_email['_token'];
+        $data['returnTo'] = $data_email['returnTo'];
+        if($data_email['email_text_type']==1)
+        {
+            $data['email_text_type'] = 1;
+            $data['body'] = $data_email['body-rich'];
+        }
+        if($data_email['email_text_type']==2)
+        {
+            $data['email_text_type'] = 2;
+            $data['body'] = $data_email['body'];
+        }
+        //print_r($data);die();
+        $validator = Validator::make($data, EmailTemplate::$rules);
+        //Session::flash('email_template', $emailTemplate->id);
+        if ($validator->fails())
+        {
+            if( Input::has('returnTo') )
+                return Redirect::to( route(Input::get('returnTo')) );
+            return Redirect::to('email-template/create')->withInput()->withErrors($validator);
+        }else
+        {
+            $emailTemplate = new EmailTemplate($data);
+            $emailTemplate->user_id = $this->_user->id;
+            $emailTemplate->save();
+        }
+        Session::put('email-template', $emailTemplate->id);
+        //echo $emailTemplate->id." "; echo Session::get('email_template');die();
+        if( Input::has('returnTo') )
+            return Redirect::to( route(Input::get('returnTo')) );
+        return Redirect::to('email-template');
+    }
+    
+    public function edit($id)
+    {
+        $emailTemplate = EmailTemplate::find($id);
+        return View::make('email-templates.create')->with('emailTemplate', $emailTemplate);
+    }
+    
+    public function update($id)
+    {
+        $emailTemplate = EmailTemplate::find($id);
+        $data_email = Input::all();
+        $data['subject'] = $data_email['subject'];
+        $data['_token'] = $data_email['_token'];
+        $data['returnTo'] = $data_email['returnTo'];
+        if($data_email['email_text_type']==1)
+        {
+            $data['email_text_type'] = 1;
+            $data['body'] = $data_email['body-rich'];
+        }
+        if($data_email['email_text_type']==2)
+        {
+            $data['email_text_type'] = 2;
+            $data['body'] = $data_email['body'];
+        }
+        //$data = Input::all();
+        $validator = Validator::make($data, EmailTemplate::$rules);
+        
+        if ($validator->fails())
+        {
+            return Redirect::to('email-template/create')->withInput()->withErrors($validator)->with('emailTemplate', $emailTemplate);
+        }else
+        {
+            $emailTemplate->name    = $data['name'];
+            $emailTemplate->subject = $data['subject'];
+            $emailTemplate->body    = $data['body'];
+            $emailTemplate->email_text_type = $data['email_text_type'];
+            $emailTemplate->updated_at = date("Y-m-d H:i:s");
+            $emailTemplate->save();
+        }
+        return Redirect::to('email-template');
+    }
+
+}

@@ -1,0 +1,140 @@
+#pricing_options_container {
+	margin-left: auto;
+	margin-right: auto;
+	width: 970px;
+	margin-top: 20px;
+}
+
+.pricing_option {
+	width: 450px;
+	background-color: #fff;
+	border-top: 10px solid #3498db;
+	float: left;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.pricing_or {
+	height: 200px;
+	float: left;
+	margin-left: 20px;
+	margin-right: 20px;
+	padding-top: 100px;
+	text-transform: uppercase;
+	font-weight: bold;
+	color: #9aa8b5;
+	font-size: 20px;
+}
+
+.pricing_title {
+	float: left;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.pricing_price {
+	float: right;
+	font-size: 30px;
+}
+
+.pricing_description {
+	float: left;
+	clear: both;
+	font-size: 18px;
+	margin-top: -12px;
+	margin-bottom: 20px;
+	width: 300px;
+}
+
+.pricing_breakdown {
+	margin-top: 20px;
+	border-top: 2px solid #d2d2d2;
+	height: 150px;
+	width: 100%;
+	float: left;
+	clear: both;
+}
+
+.pricing_breakdown_total {
+	height: 50px;
+	clear: both;
+	border-top: 2px solid #d2d2d2;
+	border-bottom: 2px solid #d2d2d2;
+}
+
+.pricing_breakdown_label {
+	float: left;
+	font-size: 18px;
+	margin-bottom: 1px solid #d2d2d2;
+}
+
+.pricing_breakdown_number {
+	float: right;
+	font-size: 18px;
+	font-weight: bold;
+}
+
+#paypal_button {
+	width: 200px;
+	padding-right: 80px;
+	background-image: url('../img/paypal_logo.png');
+	background-repeat: no-repeat;
+	background-position: 102px center;
+}
+#preview-next-step-btn {
+	width: 200px;
+	padding-right: 80px;
+	background-image: url('../img/paypal_logo.png');
+	background-repeat: no-repeat;
+	background-position: 102px center;
+}
+
+.price_selection {
+	width: 100%;
+	height: 60px;
+	background-color: #afdefd;
+	border-radius: 10px;
+}
+
+.price_selection input {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.pricing_heading {
+	font-size: 18px;
+	margin-bottom: 15px;
+}
+
+.pricing_checkbox {
+	width: 100%;
+	height: 60px;
+	background-color: #f3f7fa;
+	border: 1px solid #B7D4EA;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.pricing_checkbox:hover {
+	background-color: #e1ebf2;
+}
+
+.pricing_checkbox input[type="radio"] {
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+}
+
+.pricing_input {
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	margin-top: 20px;
+}
+
+.payment_label {
+	width: 100%;
+	margin-top: 0px;
+	margin-left: 0px;
+	height: 50px;
+}

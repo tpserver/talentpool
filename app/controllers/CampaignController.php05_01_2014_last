@@ -1,0 +1,411 @@
+<?php 
+
+//use GradList\Campaigns\CampaignList;
+
+use PayPal\Rest\ApiContext;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Api\Amount;
+use PayPal\Api\Details;
+use PayPal\Api\Item;
+use PayPal\Api\ItemList;
+use PayPal\Api\Payer;
+use PayPal\Api\Payment;
+use PayPal\Api\RedirectUrls;
+use PayPal\Api\ExecutePayment;
+use PayPal\Api\PaymentExecution;
+use PayPal\Api\Transaction;
+
+
+class CampaignController extends BaseController {
+
+/*
+|--------------------------------------------------------------------------
+| Default Home Controller
+|--------------------------------------------------------------------------
+|
+| You may wish to use controllers instead of, or in addition to, Closure
+| based routes. That's great! Here is an example controller method to
+| get you started. To route to this controller, just add the route:
+|
+| Route::get('/', 'HomeController@showWelcome');
+|
+*/
+    
+    private $_api_context;
+
+    public function __construct()
+    {
+        $this->beforeFilter('auth');
+        if( isset(Sentry::getUser()->id) )
+            $this->_user = User::find(Sentry::getUser()->id);
+        
+        // setup PayPal api context
+        $paypal_conf = Config::get('paypal');
+        $this->_api_context = new ApiContext(new OAuthTokenCredential($paypal_conf['client_id'], $paypal_conf['secret']));
+        $this->_api_context->setConfig($paypal_conf['settings']);
+
+    }
+    
+    private $_user;
+    protected $campaignSteps = ['opportunity', 'candidates', 'content', 'preview', 'payment', 'send'];
+    protected $campaignRoutes = ['new-campaign.opportunity', 'new-campaign.candidates', 'new-campaign.email', 'new-campaign.preview', 'new-campaign.payment', 'new-campaign.sent'];
+    protected $campaignStepValues = [
+        'opportunity'   => 'opportunity',
+        'candidates'    => 'candidates-pool',
+        'content'       => 'email-template',
+        'preview'       => '',
+        'payment'       => '',
+        'send'          => '',
+    ];
+    protected $campaignStepCreateRoutes = ['opportunity.create', 'search', 'email-template.create'];
+
+
+    public function index()
+    {
+        $campaigns = Campaign::all();
+        return View::make('campaign.index', ['campaigns' => $campaigns, 'currentPage' => 'campaign']);
+    }
+
+    public function show($id)
+    {
+        $campaign = Campaign::find($id);       
+//        $campaignStats = $campaign->mailchimp->getCampaignStats($campaign->mailchimp->campaign_identifier);
+        return View::make('campaign.show', ['campaign' => $campaign, 'currentPage' => 'campaign']);
+    }   
+
+    public function opportunity()
+    {
+        $opportunities = Opportunity::with('workType')->with('locations')->with('workSector')->get();
+        //print_r($opportunities->workType->name);die();
+        $data = [
+            'opportunities' => $opportunities,
+        ];
+        return View::make('campaign.opportunity.index', $data);
+    }
+    
+    public function email()
+    {
+        $emailTemplates = EmailTemplate::all();
+        $data = [
+            'emailTemplates' => $emailTemplates,
+        ];
+        return View::make('campaign.email-templates.index', $data);
+    }
+    
+    public function candidates()
+    {
+        $candidatesPools = CandidatesPool::all();
+        $data = [
+            'candidatesPools' => $candidatesPools,
+        ];
+        return View::make('campaign.candidates-pools.index', $data);
+        //return View::Make('candidates-pool.index', $data);
+    }
+    
+    public function preview()
+    {
+        $data = [
+            'opportunity'       => Opportunity::find(Session::get('opportunity', 0)),
+            'candidatesPool'    => CandidatesPool::find(Session::get('candidates-pool', 0)),
+            'emailTemplate'     => EmailTemplate::find(Session::get('email-template', 0)),
+        ];
+        //echo $data['opportunity']->id;die();
+        //print_r($data);die();
+        return View::make('campaign.preview', $data);
+    }
+    
+    public function payment()
+    {
+        $data = [
+            'opportunity'       => Opportunity::find(Session::get('opportunity', 0)),
+            'candidatesPool'    => CandidatesPool::find(Session::get('candidates-pool', 0)),
+            'emailTemplate'     => EmailTemplate::find(Session::get('email-template', 0)),
+        ];
+        return View::make('campaign.campaign-payment', $data);
+    }
+    
+    public function create()
+    {
+        $opportunities = Opportunity::lists('name', 'id');
+        $candidatesPools = CandidatesPool::lists('name','id');
+        return View::make('campaign.create', ['currentPage' => 'campaign', 'opportunities' => $opportunities, 'candidatesPools' => $candidatesPools]);
+    }
+
+    public function store()
+    {
+        $campaign_opportunity_id       = Input::get('opportunity');
+        $campaign_name                 = Input::get('campaign-name');
+        $campaign_candidate_pool_id    = Input::get('candidates_pool');
+        $campaign_emailtemplate_id     = Input::get('email_template');
+        $campaign_payment_type         = Input::get('payment_process');
+        
+        if($campaign_payment_type == 1)
+        {
+            $payer = new Payer();
+            $payer->setPaymentMethod('paypal');
+
+            $item_1 = new Item();
+            $item_1->setName('Item 1') // item name
+                ->setCurrency('USD')
+                ->setQuantity(2)
+                ->setPrice('15'); // unit price
+
+            $item_2 = new Item();
+            $item_2->setName('Item 2')
+                ->setCurrency('USD')
+                ->setQuantity(4)
+                ->setPrice('7');
+
+            $item_3 = new Item();
+            $item_3->setName('Item 3')
+                ->setCurrency('USD')
+                ->setQuantity(1)
+                ->setPrice('20');
+
+            // add item to list
+            $item_list = new ItemList();
+            $item_list->setItems(array($item_1, $item_2, $item_3));
+
+            $amount = new Amount();
+            $amount->setCurrency('USD')
+                ->setTotal(78);
+
+            $transaction = new Transaction();
+            $transaction->setAmount($amount)
+                ->setItemList($item_list)
+                ->setDescription('Your transaction description');
+
+            $redirect_urls = new RedirectUrls();
+            $redirect_urls->setReturnUrl(URL::route('payment.status'))
+                ->setCancelUrl(URL::route('payment.status'));
+
+            $payment = new Payment();
+            $payment->setIntent('Sale')
+                ->setPayer($payer)
+                ->setRedirectUrls($redirect_urls)
+                ->setTransactions(array($transaction));
+
+            try {
+                $payment->create($this->_api_context);
+            } catch (\PayPal\Exception\PPConnectionException $ex) {
+                if (\Config::get('app.debug')) {
+                    echo "Exception: " . $ex->getMessage() . PHP_EOL;
+                    $err_data = json_decode($ex->getData(), true);
+                    exit;
+                } else {
+                    die('Some error occur, sorry for inconvenient');
+                }
+            }
+
+            foreach($payment->getLinks() as $link) {
+                if($link->getRel() == 'approval_url') {
+                    $redirect_url = $link->getHref();
+                    break;
+                }
+            }
+
+            // add payment ID to session
+            Session::put('paypal_payment_id', $payment->getId());
+
+            if(isset($redirect_url)) {
+                // redirect to paypal
+                return Redirect::away($redirect_url);
+            }
+
+            return Redirect::route('original.route')
+                ->with('error', 'Unknown error occurred');
+
+        }
+        else
+        {
+            $campaign                       = new Campaign(Input::all());
+            $campaign->name                 = Input::get('campaign-name');
+            $campaign->opportunity_id       = Input::get('opportunity');
+            $campaign->candidates_pool_id   = Input::get('candidates_pool');
+            $campaign->email_template_id    = Input::get('email_template');
+            $campaign->save();
+        }
+        
+        
+        
+        //These code comment out by sourav. but have to open later. 26_11_2014
+        
+        //$mailchimp = new Mailchimp();
+        //$candidatesPool = CandidatesPool::find($campaign->candidates_pool_id);
+        //$emailTemplate = EmailTemplate::find($campaign->email_template_id);
+        //$user_emails = $candidatesPool->users()->get(['email']);
+        //
+        //$listId = MailchimpCampaign::$list;
+        //$userId = $this->_user->id;
+        //$campaignId = $campaign->id;
+        //$segmentName = 'u'.$userId.'c'.$campaignId;
+        //
+        //$createSegmentResult        = $mailchimp->lists->staticSegmentAdd($listId, $segmentName);
+        //$addEmailsToSegmentResult   = $mailchimp->lists->staticSegmentMembersAdd($listId, $createSegmentResult['id'], $user_emails);
+        //$campaignCreateResult       = $this->createCampaign($listId, $createSegmentResult['id'], $emailTemplate->subject, $emailTemplate->body);
+        //
+        //$mailChimpData = new MailchimpCampaign(['campaign_identifier' => $campaignCreateResult['id'], 'list_identifier' => $listId, 'segment_identifier' => $createSegmentResult['id']]);
+        //if( ( isset($createSegmentResult['status']) && $createSegmentResult['status'] == 'error' )
+        //        || ( isset($addEmailsToSegmentResult['status']) && $addEmailsToSegmentResult['status'] == 'error' )
+        //        || ( isset($campaignCreateResult['status']) && $campaignCreateResult['status'] == 'error' )){
+        //    return Redirect::back()->with('error', 'An error occurred, please try again later');
+        //}
+        //$campaign->mailchimp()->save($mailChimpData);
+        
+        Session::forget('campaign-name');
+        Session::forget('opportunity');
+        Session::forget('candidates_pool');
+        Session::forget('candidates-pool');
+        Session::forget('email_template');
+        Session::forget('email-template');
+        
+        
+        return Redirect::to(route('new-campaign.sent'));
+    }
+    
+    public function getPaymentStatus()
+    {
+        // Get the payment ID before session clear
+        $payment_id = Session::get('paypal_payment_id');
+
+        // clear the session payment ID
+        Session::forget('paypal_payment_id');
+
+        //if (empty(Input::get('PayerID')) || empty(Input::get('token'))) {
+            //return Redirect::route('original.route')
+            //    ->with('error', 'Payment failed');
+         //   echo 'Payment failed 1'; die();
+        //}
+
+        $payment = Payment::get($payment_id, $this->_api_context);
+
+        // PaymentExecution object includes information necessary 
+        // to execute a PayPal account payment. 
+        // The payer_id is added to the request query parameters
+        // when the user is redirected from paypal back to your site
+        $execution = new PaymentExecution();
+        $execution->setPayerId(Input::get('PayerID'));
+
+        //Execute the payment
+        $result = $payment->execute($execution, $this->_api_context);
+
+        echo '<pre>';print_r($result);echo '</pre>';exit; // DEBUG RESULT, remove it later
+
+        if ($result->getState() == 'approved') { // payment made
+            //return Redirect::route('original.route')
+            //    ->with('success', 'Payment success');
+            echo 'Payment Success';die();
+        }
+        //return Redirect::route('original.route')
+        //    ->with('error', 'Payment failed');
+        echo 'Payment Failed';die();
+    }
+
+    
+    public function saveStep()
+    {
+        $currentStep = Input::get('step', $this->campaignSteps[0]);
+        $currentStepValue = Input::get($this->campaignStepValues[$currentStep], 0);
+        //echo $currentStepValue."<br/>";
+        if($currentStepValue == 0 && isset($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)]) )
+        {
+            //echo $this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)];die();
+            return Redirect::to(route($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)],
+                ['returnTo' => $this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]]))->with('campaign', 1 );
+        }
+        Session::set($this->campaignStepValues[$currentStep], $currentStepValue);
+        //echo (array_search($currentStep, $this->campaignSteps)+1); print_r($currentStep);print_r($this->campaignSteps);
+        //echo $this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]; die();
+        return Redirect::to(route($this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]));
+    }
+    
+    public function saveStepTypes()
+    {
+        $currentStep = Input::get('step', $this->campaignSteps[0]);
+        $currentStepValue = Input::get($this->campaignStepValues[$currentStep], 0);
+        $routingType = Input::get('form_type_opportunity');
+        if($routingType == 1 || $routingType == 2 || $routingType == 3)
+        {
+            $routingType = $routingType;
+        }
+        else
+        {
+            $routingType = 1;
+        }
+        if($currentStepValue == 0 && isset($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)]) )
+        {
+            ////echo $this->campaignStepCreateRoutes[array_search($currentStep,$this->campaignSteps)];print_r($currentStep); print_r($this->campaignSteps); 
+            ////echo "<br/>".$this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]; die();
+            //Session::set('frmopportunitytype', $routingType);
+            if($routingType==2)
+            {
+                return Redirect::to(route('opportunity.upcomingevent',
+                ['returnTo' => 'new-campaign.candidates']))->with('campaign', 1 )->with('frmopportunitytype', $routingType);
+                //echo "hi";die();
+            }
+            if($routingType==3)
+            {
+                return Redirect::to(route('opportunity.generalintro',
+                ['returnTo' => 'new-campaign.candidates']))->with('campaign', 1 )->with('frmopportunitytype', $routingType);
+                //echo "hello";die();
+            }
+            else
+            {
+                
+                return Redirect::to(route($this->campaignStepCreateRoutes[array_search($currentStep, $this->campaignSteps)],
+                ['returnTo' => $this->campaignRoutes[array_search($currentStep, $this->campaignSteps)+1]]))->with('campaign', 1 )->with('frmopportunitytype', $routingType);
+            }
+        }
+    }
+    
+    private function createCampaign($listId, $segmentId, $subject, $body)
+    {
+        $mailchimp = new Mailchimp();
+        $trackingOptions =  [ 'opens' => true,  'html_clicks' => true ];
+        
+        $options = [
+            'list_id'       => $listId, 
+            'subject'       => $subject,
+            'from_email'    => 'no-reply@gradlist.co.uk', 
+            'from_name'     => 'GradList',
+            'tracking'      => $trackingOptions,
+        ];
+        $segment_opts = ['saved_segment_id'=> $segmentId, 'match' => 'all'];
+        
+        $content = ['html' => $body];
+
+        return $mailchimp->campaigns->create('regular', $options, $content, $segment_opts);
+    }
+    
+    private function sendCampaign($cid)
+    {
+        $t = new Mailchimp();
+        return $t->campaigns->send($cid);
+    }
+    
+    //Andrew
+    public function new_opportunity()
+    {
+        return View::make('new_opportunity');
+    }
+    
+    public function new_campaign()
+    {
+        $candidatesPools = CandidatesPool::all();
+        $emailTemplates = EmailTemplate::all();
+        $opportunities = Opportunity::all();
+        $data = [
+            'candidatesPools'   => $candidatesPools, 
+            'emailTemplates'    => $emailTemplates,
+            'opportunities'     => $opportunities,
+            'workTypes'         => WorkType::all(), 
+            'workOptions'       => Option::where('category_id', '=', 1)->get(),
+            ];
+        return View::make('campaign.new-campaign', $data);
+    }
+
+    public function new_campaign_search()
+    {
+        return View::make('search');
+    }
+}
