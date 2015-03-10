@@ -1,56 +1,48 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        @include('common.head', array('title', 'GradList - Frequently Asked Questions') )
-        {{ HTML::style('css/base.css') }}
-        {{ HTML::style('css/main.css') }}
-        {{ HTML::style('css/db_search.css') }}
-        {{ HTML::style('css/base_extended.css') }}
-    </head>
-    <body>
-        <div id="topbar_bg">
-            <div id="topbar">
-                <a href="/"><div id="logo"></div></a>
-                @include('common.employeer_top_menu')
-                </div>
-        </div>
-        
-        <div id="main_container">
-       
-       	<h1>Candidates</h1>
-        
-        <h2>Candidate Pools</h2>
-        
-        <table class="table table-hover table-bordered table-striped">
-        <tr>
-            <th>Name</th>
-            <th>Size</th>
-            <th>Campaign Status</th>
-            <th>New Candidates?</th>
-            <th>Filters</th>
-        </tr>
-        <tr>
-          <td class="pool_name"><a href="campaign_details">Oxbridge Scientists</td></a>
-          <td class="pool_size">272</td>
-          <td class="pool_campaign_used">Contacted</td>
-          <td class="pool_new_candidates">17</td>
-          <td class="pool_filters"><div class="round_box skill">Graduating in 2014</div><div class="round_box skill">Oxford</div><div class="round_box skill">Cambridge</div><div class="round_box skill">Studying Science</div><div class="round_box experience">Speaks French</div></td>
-        </tr>
-        </table>
-        {{ link_to_route('search', 'New Candidate Pool', [], ['id' => 'new_campaign_btn', 'class' => 'red_button']) }}
-        <div id="spacer"></div>
-        
-        </div>
-        
-        
-        
-        </div>
-        
-        <div id="footer">
-        </div>
-   
-    </body>
-</html>
+@extends('layouts_new.employer')
+
+@section('title')
+Talent Pools
+@stop
+
+@section('body')
+
+@foreach($candidatesPools as $candidatesPool)
+
+<div class="talentpool">
+
+<div class="size">
+<div class="label">Size</div>
+<div class="count">{{$candidatesPool->users->count()}}</div>
+</div>
+
+<div class="name">{{$candidatesPool->name}}</div>
+
+<div class="edit_button">Edit</div>
+
+<div id="filter_1" class="filter">
+<div class="text">Has work experience of at least</div> <div class="filter_element green no_shadow">2-4 weeks</div>
+</div>
+
+<div id="filter_2" class="filter">
+<div class="text">Has a degree from</div> <div class="filter_element purple no_shadow">Oxford University</div> <div class="connector">or</div> <div class="filter_element purple no_shadow">Cambridge University</div>
+</div>
+
+<div id="filter_3" class="filter">
+<div class="text">Has a degree result of at least</div> <div class="filter_element purple no_shadow">2:1</div> <div class="connector">or above</div></div>
+
+<div class="more_or_less more">
+<div class="container"><div class="text">More</div>
+<svg class="more_triangle" id="down" height="12" width="12"><polygon class="more_triangle_polygon" points="5.5,11 0,0 11,0"/></svg>
+<svg class="more_triangle" id="up" height="12" width="12"><polygon class="more_triangle_polygon" points="5.5,0 0,11 11,11"/></svg>
+</div>
+</div>
+
+</div>
+
+@endforeach
+
+<div class="button_container">
+<div id="new_campaign_btn" class="button blue">New Talent Pool</div>
+</div>
+
+@stop

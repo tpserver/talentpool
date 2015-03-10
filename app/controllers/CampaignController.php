@@ -609,4 +609,8 @@ class CampaignController extends BaseController {
     {
         return View::make('search');
     }
+    public function details()
+    {
+        return View::make('campaign.details');
+    }
 }
